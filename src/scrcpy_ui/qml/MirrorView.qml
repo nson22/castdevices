@@ -31,24 +31,27 @@ Item {
                 Item { Layout.fillWidth: true }
 
                 ToolButton {
-                    text: "▦"
-                    font.pixelSize: 18
+                    text: "photo_camera"
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
                     ToolTip.text: "Screenshot"
                     ToolTip.visible: hovered
                     ToolTip.delay: 400
                     onClicked: mirrorViewModel.takeScreenshot()
                 }
                 ToolButton {
-                    text: "⚙"
-                    font.pixelSize: 18
+                    text: "settings"
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
                     ToolTip.text: "Configurações"
                     ToolTip.visible: hovered
                     ToolTip.delay: 400
                     onClicked: root.StackView.view.push(settingsComponent)
                 }
                 ToolButton {
-                    text: "⏻"
-                    font.pixelSize: 18
+                    text: "power_settings_new"
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
                     ToolTip.text: "Desconectar"
                     ToolTip.visible: hovered
                     ToolTip.delay: 400
@@ -74,21 +77,37 @@ Item {
             }
 
             MouseArea {
+                id: mouseArea
                 anchors.fill: videoOutput
                 acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                 hoverEnabled: false
 
+                // Android não tem um gesto nativo de "clique direito"/"clique do meio"
+                // sobre toque -- só o botão esquerdo gera um toque de fato (down/move/up).
+                // Direito e meio disparam Voltar/Home (mesmo default do scrcpy original).
+                property bool touchActive: false
+
                 onPressed: function (mouse) {
                     videoArea.forceActiveFocus()
-                    mirrorViewModel.sendMousePress(mouse.x, mouse.y, mouse.buttons)
+                    if (mouse.button === Qt.RightButton) {
+                        mirrorViewModel.sendBack()
+                    } else if (mouse.button === Qt.MiddleButton) {
+                        mirrorViewModel.sendHome()
+                    } else {
+                        touchActive = true
+                        mirrorViewModel.sendMousePress(mouse.x, mouse.y, mouse.buttons)
+                    }
                 }
                 onPositionChanged: function (mouse) {
-                    if (pressed) {
+                    if (touchActive) {
                         mirrorViewModel.sendMouseMove(mouse.x, mouse.y, mouse.buttons)
                     }
                 }
                 onReleased: function (mouse) {
-                    mirrorViewModel.sendMouseRelease(mouse.x, mouse.y, mouse.buttons)
+                    if (touchActive && mouse.button === Qt.LeftButton) {
+                        touchActive = false
+                        mirrorViewModel.sendMouseRelease(mouse.x, mouse.y, mouse.buttons)
+                    }
                 }
                 onWheel: function (wheel) {
                     mirrorViewModel.sendWheel(wheel.x, wheel.y, wheel.angleDelta.x / 8, wheel.angleDelta.y / 8)

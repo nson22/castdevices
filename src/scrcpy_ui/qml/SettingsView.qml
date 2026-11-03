@@ -22,8 +22,9 @@ Item {
                 spacing: 8
 
                 ToolButton {
-                    text: "←"
-                    font.pixelSize: 18
+                    text: "arrow_back"
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
                     ToolTip.text: "Voltar"
                     ToolTip.visible: hovered
                     ToolTip.delay: 400

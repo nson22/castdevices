@@ -18,6 +18,12 @@ PACKET_PTS_MASK = (1 << 61) - 1
 
 POINTER_ID_MOUSE = 0xFFFFFFFFFFFFFFFF
 
+# android.view.KeyEvent.KEYCODE_HOME -- usado pelo clique do meio do mouse
+# (scrcpy mapeia o botão direito para "voltar" e o do meio para "home" por
+# padrão, já que a maioria dos apps Android não reage a um botão secundário
+# num evento de toque).
+ANDROID_KEYCODE_HOME = 3
+
 
 class ControlMsgType(IntEnum):
     INJECT_KEYCODE = 0

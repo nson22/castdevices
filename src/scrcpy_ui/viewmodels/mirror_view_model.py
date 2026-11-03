@@ -20,10 +20,11 @@ from scrcpy_ui.adb import client
 from scrcpy_ui.input.keyboard_mapper import qt_key_to_android_keycode
 from scrcpy_ui.input.mouse_mapper import MouseMapper
 from scrcpy_ui.protocol.connection import ScrcpyConnection
-from scrcpy_ui.protocol.constants import KeyEventAction, MotionEventAction
+from scrcpy_ui.protocol.constants import ANDROID_KEYCODE_HOME, KeyEventAction, MotionEventAction
 from scrcpy_ui.protocol.control_stream import (
     ControlSender,
     iter_device_messages,
+    serialize_back_or_screen_on,
     serialize_key_event,
     serialize_scroll_event,
     serialize_touch_event,
@@ -202,5 +203,30 @@ class MirrorViewModel(QObject):
         data = serialize_key_event(action, keycode)
         try:
             self._control_sender.send(data)
+        except OSError:
+            pass
+
+    @Slot()
+    def sendBack(self) -> None:
+        """Botão direito do mouse: Android não tem um gesto de "clique direito"
+        nativo pra toque, então -- igual ao scrcpy original -- isso simula a
+        tecla Voltar em vez de injetar um toque com o botão secundário."""
+        if self._control_sender is None:
+            return
+        try:
+            self._control_sender.send(serialize_back_or_screen_on(KeyEventAction.DOWN))
+            self._control_sender.send(serialize_back_or_screen_on(KeyEventAction.UP))
+        except OSError:
+            pass
+
+    @Slot()
+    def sendHome(self) -> None:
+        """Clique do botão do meio (wheel): simula a tecla Home, mesmo
+        binding padrão do scrcpy original para esse botão."""
+        if self._control_sender is None:
+            return
+        try:
+            self._control_sender.send(serialize_key_event(KeyEventAction.DOWN, ANDROID_KEYCODE_HOME))
+            self._control_sender.send(serialize_key_event(KeyEventAction.UP, ANDROID_KEYCODE_HOME))
         except OSError:
             pass

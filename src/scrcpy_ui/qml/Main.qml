@@ -7,6 +7,7 @@ ApplicationWindow {
     height: 820
     visible: true
     title: "scrcpy-ui"
+    color: "#121214"
 
     StackView {
         id: stackView

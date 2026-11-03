@@ -75,6 +75,10 @@ def serialize_key_event(action: int, keycode: int, *, repeat: int = 0, metastate
     return struct.pack(">BBIII", ControlMsgType.INJECT_KEYCODE, action, keycode, repeat, metastate)
 
 
+def serialize_back_or_screen_on(action: int) -> bytes:
+    return struct.pack(">BB", ControlMsgType.BACK_OR_SCREEN_ON, action)
+
+
 class ControlSender:
     """Envio thread-safe de mensagens de controle pelo socket de controle."""
 

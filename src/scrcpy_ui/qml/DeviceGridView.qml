@@ -3,26 +3,41 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Item {
+    id: root
     anchors.fill: parent
 
     Component.onCompleted: deviceListViewModel.refresh()
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
-        spacing: 12
+        spacing: 0
 
-        RowLayout {
+        Rectangle {
+            id: topBar
             Layout.fillWidth: true
-            Label {
-                text: "Devices"
-                font.pixelSize: 20
-                font.bold: true
-                Layout.fillWidth: true
-            }
-            Button {
-                text: "Atualizar"
-                onClicked: deviceListViewModel.refresh()
+            height: 40
+            color: "#1b1b1f"
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 12
+                anchors.rightMargin: 4
+
+                Label {
+                    text: "Devices"
+                    font.pixelSize: 16
+                    font.bold: true
+                    Layout.fillWidth: true
+                }
+                ToolButton {
+                    text: "refresh"
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
+                    ToolTip.text: "Atualizar"
+                    ToolTip.visible: hovered
+                    ToolTip.delay: 400
+                    onClicked: deviceListViewModel.refresh()
+                }
             }
         }
 
@@ -30,6 +45,7 @@ Item {
             id: gridView
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.margins: 16
             clip: true
             cellWidth: 170
             cellHeight: 280
@@ -70,10 +86,10 @@ Item {
 
                         Text {
                             anchors.centerIn: parent
-                            anchors.horizontalCenterOffset: 2
-                            text: "▶"
+                            text: "play_arrow"
+                            font.family: "Material Icons"
                             color: "white"
-                            font.pixelSize: 22
+                            font.pixelSize: 28
                         }
                     }
 
