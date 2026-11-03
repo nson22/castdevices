@@ -1,0 +1,1 @@
+Quero construir um software multiplataformas usando o [pypi.org/project/PySide6](https://pypi.org/project/PySide6/) como biblioteca de UI, com o QML, para criar as funcionalidades disponiveis no projeto [github.com/Genymobile/scrcpy](https://github.com/Genymobile/scrcpy)
