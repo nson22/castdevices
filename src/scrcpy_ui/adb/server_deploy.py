@@ -39,6 +39,8 @@ def start_server(
     video: bool = True,
     audio: bool = False,
     control: bool = True,
+    stay_awake: bool = False,
+    show_touches: bool = False,
 ) -> adbutils.AdbConnection:
     cmd = [
         f"CLASSPATH={SERVER_JAR_REMOTE}",
@@ -51,4 +53,8 @@ def start_server(
         f"audio={'true' if audio else 'false'}",
         f"control={'true' if control else 'false'}",
     ]
+    if stay_awake:
+        cmd.append("stay_awake=true")
+    if show_touches:
+        cmd.append("show_touches=true")
     return device.shell(cmd, stream=True)

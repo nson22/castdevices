@@ -5,7 +5,6 @@ import QtQuick.Dialogs
 
 Item {
     id: root
-    anchors.fill: parent
 
     ColumnLayout {
         anchors.fill: parent
@@ -62,6 +61,30 @@ Item {
                     text: "Escolher..."
                     onClicked: folderDialog.open()
                 }
+            }
+
+            Label {
+                text: "Conexão"
+                font.bold: true
+                Layout.topMargin: 16
+            }
+
+            Switch {
+                text: "Manter o device sempre acordado enquanto espelhado"
+                checked: settingsViewModel.stayAwake
+                onToggled: settingsViewModel.stayAwake = checked
+            }
+            Switch {
+                text: "Mostrar indicador visual de toques no device"
+                checked: settingsViewModel.showTouches
+                onToggled: settingsViewModel.showTouches = checked
+            }
+            Label {
+                text: "Essas duas opções só têm efeito na próxima conexão."
+                font.italic: true
+                opacity: 0.7
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
             }
         }
 

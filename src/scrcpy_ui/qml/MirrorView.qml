@@ -5,7 +5,6 @@ import QtMultimedia
 
 Item {
     id: root
-    anchors.fill: parent
 
     Component {
         id: settingsComponent
@@ -28,6 +27,34 @@ Item {
                 anchors.rightMargin: 4
                 spacing: 0
 
+                ToolButton {
+                    text: "arrow_back"
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
+                    ToolTip.text: "Voltar (Android)"
+                    ToolTip.visible: hovered
+                    ToolTip.delay: 400
+                    onClicked: mirrorViewModel.sendBack()
+                }
+                ToolButton {
+                    text: "home"
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
+                    ToolTip.text: "Home"
+                    ToolTip.visible: hovered
+                    ToolTip.delay: 400
+                    onClicked: mirrorViewModel.sendHome()
+                }
+                ToolButton {
+                    text: "crop_square"
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
+                    ToolTip.text: "Apps recentes"
+                    ToolTip.visible: hovered
+                    ToolTip.delay: 400
+                    onClicked: mirrorViewModel.sendRecents()
+                }
+
                 Item { Layout.fillWidth: true }
 
                 ToolButton {
@@ -38,6 +65,43 @@ Item {
                     ToolTip.visible: hovered
                     ToolTip.delay: 400
                     onClicked: mirrorViewModel.takeScreenshot()
+                }
+                ToolButton {
+                    id: moreButton
+                    text: "more_vert"
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
+                    ToolTip.text: "Mais ações"
+                    ToolTip.visible: hovered
+                    ToolTip.delay: 400
+                    onClicked: moreMenu.open()
+
+                    Menu {
+                        id: moreMenu
+                        y: moreButton.height
+
+                        MenuItem {
+                            text: "Girar tela"
+                            onTriggered: mirrorViewModel.rotateDevice()
+                        }
+                        MenuItem {
+                            text: mirrorViewModel.screenOn ? "Desligar tela" : "Ligar tela"
+                            onTriggered: mirrorViewModel.toggleScreenPower()
+                        }
+                        MenuItem {
+                            text: "Expandir notificações"
+                            onTriggered: mirrorViewModel.expandNotifications()
+                        }
+                        MenuSeparator {}
+                        MenuItem {
+                            text: "Copiar clipboard do device"
+                            onTriggered: mirrorViewModel.copyClipboardFromDevice()
+                        }
+                        MenuItem {
+                            text: "Colar clipboard no device"
+                            onTriggered: mirrorViewModel.pasteClipboardToDevice()
+                        }
+                    }
                 }
                 ToolButton {
                     text: "settings"
@@ -122,33 +186,33 @@ Item {
                 mirrorViewModel.sendKey(event.key, false)
                 event.accepted = true
             }
-        }
-    }
 
-    Label {
-        id: toast
-        anchors.top: topBar.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.topMargin: 8
-        padding: 8
-        background: Rectangle { color: "#cc000000"; radius: 6 }
-        color: "white"
-        opacity: 0
-        visible: opacity > 0
-        z: 10
+            Label {
+                id: toast
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.topMargin: 8
+                padding: 8
+                background: Rectangle { color: "#cc000000"; radius: 6 }
+                color: "white"
+                opacity: 0
+                visible: opacity > 0
+                z: 10
 
-        Behavior on opacity { NumberAnimation { duration: 200 } }
+                Behavior on opacity { NumberAnimation { duration: 200 } }
 
-        Timer {
-            id: hideTimer
-            interval: 2200
-            onTriggered: toast.opacity = 0
-        }
+                Timer {
+                    id: hideTimer
+                    interval: 2200
+                    onTriggered: toast.opacity = 0
+                }
 
-        function show(message) {
-            toast.text = message
-            toast.opacity = 1
-            hideTimer.restart()
+                function show(message) {
+                    toast.text = message
+                    toast.opacity = 1
+                    hideTimer.restart()
+                }
+            }
         }
     }
 

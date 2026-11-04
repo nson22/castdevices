@@ -79,6 +79,29 @@ def serialize_back_or_screen_on(action: int) -> bytes:
     return struct.pack(">BB", ControlMsgType.BACK_OR_SCREEN_ON, action)
 
 
+def serialize_simple(msg_type: ControlMsgType) -> bytes:
+    """Mensagens sem payload: EXPAND_NOTIFICATION_PANEL, EXPAND_SETTINGS_PANEL,
+    COLLAPSE_PANELS, ROTATE_DEVICE, RESET_VIDEO, etc."""
+    return struct.pack(">B", msg_type)
+
+
+def serialize_set_display_power(on: bool) -> bytes:
+    return struct.pack(">BB", ControlMsgType.SET_DISPLAY_POWER, 1 if on else 0)
+
+
+def serialize_get_clipboard(copy_key: int) -> bytes:
+    return struct.pack(">BB", ControlMsgType.GET_CLIPBOARD, copy_key)
+
+
+def serialize_set_clipboard(sequence: int, text: str, *, paste: bool) -> bytes:
+    encoded = text.encode("utf-8")
+    return (
+        struct.pack(">BQB", ControlMsgType.SET_CLIPBOARD, sequence, 1 if paste else 0)
+        + struct.pack(">I", len(encoded))
+        + encoded
+    )
+
+
 class ControlSender:
     """Envio thread-safe de mensagens de controle pelo socket de controle."""
 

@@ -4,7 +4,6 @@ import QtQuick.Layouts
 
 Item {
     id: root
-    anchors.fill: parent
 
     Component.onCompleted: deviceListViewModel.refresh()
 

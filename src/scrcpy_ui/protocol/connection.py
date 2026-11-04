@@ -50,7 +50,13 @@ class ScrcpyConnection:
         self._shell_conn: adbutils.AdbConnection | None = None
         self._drain_thread: threading.Thread | None = None
 
-    def open(self, *, accept_timeout: float = 10.0) -> DeviceInfo:
+    def open(
+        self,
+        *,
+        accept_timeout: float = 10.0,
+        stay_awake: bool = False,
+        show_touches: bool = False,
+    ) -> DeviceInfo:
         server_deploy.ensure_server_pushed(self.device)
 
         scid = random.getrandbits(31)
@@ -63,7 +69,9 @@ class ScrcpyConnection:
 
         self.device.reverse(f"localabstract:{socket_name}", f"tcp:{local_port}")
         try:
-            self._shell_conn = server_deploy.start_server(self.device, scid)
+            self._shell_conn = server_deploy.start_server(
+                self.device, scid, stay_awake=stay_awake, show_touches=show_touches
+            )
             self._drain_thread = threading.Thread(
                 target=self._drain_server_output, daemon=True
             )

@@ -3,8 +3,9 @@ import QtQuick.Controls
 
 ApplicationWindow {
     id: window
-    width: 420
-    height: 820
+    width: 480
+    height: 860
+    minimumWidth: 320
     visible: true
     title: "scrcpy-ui"
     color: "#121214"

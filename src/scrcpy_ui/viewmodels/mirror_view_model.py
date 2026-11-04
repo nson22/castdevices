@@ -13,20 +13,33 @@ import threading
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import Property, QObject, Signal, Slot
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtMultimedia import QVideoFrame, QVideoSink
 
 from scrcpy_ui.adb import client
 from scrcpy_ui.input.keyboard_mapper import qt_key_to_android_keycode
 from scrcpy_ui.input.mouse_mapper import MouseMapper
 from scrcpy_ui.protocol.connection import ScrcpyConnection
-from scrcpy_ui.protocol.constants import ANDROID_KEYCODE_HOME, KeyEventAction, MotionEventAction
+from scrcpy_ui.protocol.constants import (
+    ANDROID_KEYCODE_APP_SWITCH,
+    ANDROID_KEYCODE_HOME,
+    ControlMsgType,
+    CopyKey,
+    DeviceMsgType,
+    KeyEventAction,
+    MotionEventAction,
+)
 from scrcpy_ui.protocol.control_stream import (
     ControlSender,
     iter_device_messages,
     serialize_back_or_screen_on,
+    serialize_get_clipboard,
     serialize_key_event,
     serialize_scroll_event,
+    serialize_set_clipboard,
+    serialize_set_display_power,
+    serialize_simple,
     serialize_touch_event,
 )
 from scrcpy_ui.protocol.video_stream import iter_video_packets
@@ -41,6 +54,8 @@ class MirrorViewModel(QObject):
     errorOccurred = Signal(str)
     frameReady = Signal(QVideoFrame)
     screenshotSaved = Signal(str)
+    clipboardReceived = Signal(str)
+    screenPowerChanged = Signal(bool)
 
     def __init__(self, settings_view_model: SettingsViewModel, parent=None):
         super().__init__(parent)
@@ -51,8 +66,10 @@ class MirrorViewModel(QObject):
         self._video_sink: QVideoSink | None = None
         self._worker: threading.Thread | None = None
         self._last_frame: QVideoFrame | None = None
+        self._screen_on = True
 
         self.frameReady.connect(self._on_frame_ready)
+        self.clipboardReceived.connect(self._on_clipboard_received)
 
     @Slot(QVideoSink)
     def attachVideoSink(self, sink: QVideoSink) -> None:
@@ -73,7 +90,10 @@ class MirrorViewModel(QObject):
     def _run(self, serial: str) -> None:
         connection = ScrcpyConnection(client.get_device(serial))
         try:
-            info = connection.open()
+            info = connection.open(
+                stay_awake=self._settings.stayAwake,
+                show_touches=self._settings.showTouches,
+            )
         except Exception as exc:
             self.errorOccurred.emit(str(exc))
             return
@@ -106,10 +126,15 @@ class MirrorViewModel(QObject):
         if connection is None or connection.control_sock is None:
             return
         try:
-            for _msg_type, _payload in iter_device_messages(connection.control_sock):
-                pass  # clipboard do device: fora de escopo na fase 1
+            for msg_type, payload in iter_device_messages(connection.control_sock):
+                if msg_type == DeviceMsgType.CLIPBOARD:
+                    self.clipboardReceived.emit(payload.decode("utf-8", errors="replace"))
         except (ConnectionError, OSError):
             pass
+
+    @Slot(str)
+    def _on_clipboard_received(self, text: str) -> None:
+        QGuiApplication.clipboard().setText(text)
 
     @Slot(QVideoFrame)
     def _on_frame_ready(self, frame: QVideoFrame) -> None:
@@ -228,5 +253,73 @@ class MirrorViewModel(QObject):
         try:
             self._control_sender.send(serialize_key_event(KeyEventAction.DOWN, ANDROID_KEYCODE_HOME))
             self._control_sender.send(serialize_key_event(KeyEventAction.UP, ANDROID_KEYCODE_HOME))
+        except OSError:
+            pass
+
+    @Slot()
+    def sendRecents(self) -> None:
+        if self._control_sender is None:
+            return
+        try:
+            self._control_sender.send(
+                serialize_key_event(KeyEventAction.DOWN, ANDROID_KEYCODE_APP_SWITCH)
+            )
+            self._control_sender.send(
+                serialize_key_event(KeyEventAction.UP, ANDROID_KEYCODE_APP_SWITCH)
+            )
+        except OSError:
+            pass
+
+    @Slot()
+    def rotateDevice(self) -> None:
+        if self._control_sender is None:
+            return
+        try:
+            self._control_sender.send(serialize_simple(ControlMsgType.ROTATE_DEVICE))
+        except OSError:
+            pass
+
+    @Slot()
+    def expandNotifications(self) -> None:
+        if self._control_sender is None:
+            return
+        try:
+            self._control_sender.send(serialize_simple(ControlMsgType.EXPAND_NOTIFICATION_PANEL))
+        except OSError:
+            pass
+
+    @Property(bool, notify=screenPowerChanged)
+    def screenOn(self) -> bool:
+        return self._screen_on
+
+    @Slot()
+    def toggleScreenPower(self) -> None:
+        if self._control_sender is None:
+            return
+        self._screen_on = not self._screen_on
+        try:
+            self._control_sender.send(serialize_set_display_power(self._screen_on))
+        except OSError:
+            pass
+        self.screenPowerChanged.emit(self._screen_on)
+
+    @Slot()
+    def copyClipboardFromDevice(self) -> None:
+        if self._control_sender is None:
+            return
+        try:
+            self._control_sender.send(serialize_get_clipboard(CopyKey.COPY))
+        except OSError:
+            pass
+
+    @Slot()
+    def pasteClipboardToDevice(self) -> None:
+        if self._control_sender is None:
+            return
+        text = QGuiApplication.clipboard().text()
+        if not text:
+            return
+        try:
+            self._control_sender.send(serialize_set_clipboard(0, text, paste=True))
         except OSError:
             pass

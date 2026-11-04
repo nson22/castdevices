@@ -9,6 +9,8 @@ from PySide6.QtCore import Property, QObject, QStandardPaths, QUrl, Signal, Slot
 from scrcpy_ui.storage.settings_store import SettingsStore
 
 _SCREENSHOT_DIR_KEY = "screenshot_dir"
+_STAY_AWAKE_KEY = "stay_awake"
+_SHOW_TOUCHES_KEY = "show_touches"
 
 
 def _default_screenshot_dir() -> str:
@@ -18,11 +20,15 @@ def _default_screenshot_dir() -> str:
 
 class SettingsViewModel(QObject):
     screenshotDirChanged = Signal(str)
+    stayAwakeChanged = Signal(bool)
+    showTouchesChanged = Signal(bool)
 
     def __init__(self, store: SettingsStore, parent=None):
         super().__init__(parent)
         self._store = store
         self._screenshot_dir = self._store.get(_SCREENSHOT_DIR_KEY, _default_screenshot_dir())
+        self._stay_awake = self._store.get(_STAY_AWAKE_KEY, "0") == "1"
+        self._show_touches = self._store.get(_SHOW_TOUCHES_KEY, "0") == "1"
 
     @Property(str, notify=screenshotDirChanged)
     def screenshotDir(self) -> str:
@@ -36,3 +42,27 @@ class SettingsViewModel(QObject):
         self._screenshot_dir = path
         self._store.set(_SCREENSHOT_DIR_KEY, path)
         self.screenshotDirChanged.emit(path)
+
+    @Property(bool, notify=stayAwakeChanged)
+    def stayAwake(self) -> bool:
+        return self._stay_awake
+
+    @stayAwake.setter
+    def stayAwake(self, value: bool) -> None:
+        if value == self._stay_awake:
+            return
+        self._stay_awake = value
+        self._store.set(_STAY_AWAKE_KEY, "1" if value else "0")
+        self.stayAwakeChanged.emit(value)
+
+    @Property(bool, notify=showTouchesChanged)
+    def showTouches(self) -> bool:
+        return self._show_touches
+
+    @showTouches.setter
+    def showTouches(self, value: bool) -> None:
+        if value == self._show_touches:
+            return
+        self._show_touches = value
+        self._store.set(_SHOW_TOUCHES_KEY, "1" if value else "0")
+        self.showTouchesChanged.emit(value)

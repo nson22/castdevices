@@ -23,6 +23,7 @@ POINTER_ID_MOUSE = 0xFFFFFFFFFFFFFFFF
 # padrão, já que a maioria dos apps Android não reage a um botão secundário
 # num evento de toque).
 ANDROID_KEYCODE_HOME = 3
+ANDROID_KEYCODE_APP_SWITCH = 187
 
 
 class ControlMsgType(IntEnum):
@@ -54,6 +55,12 @@ class DeviceMsgType(IntEnum):
     CLIPBOARD = 0
     ACK_CLIPBOARD = 1
     UHID_OUTPUT = 2
+
+
+class CopyKey(IntEnum):
+    NONE = 0
+    COPY = 1
+    CUT = 2
 
 
 class MotionEventAction(IntEnum):
