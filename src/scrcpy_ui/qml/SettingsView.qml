@@ -99,6 +99,11 @@ Item {
                 }
 
                 Switch {
+                    text: "Conectar automaticamente quando só houver um device"
+                    checked: settingsViewModel.autoConnectSingleDevice
+                    onToggled: settingsViewModel.autoConnectSingleDevice = checked
+                }
+                Switch {
                     text: "Manter o device sempre acordado enquanto espelhado"
                     checked: settingsViewModel.stayAwake
                     onToggled: settingsViewModel.stayAwake = checked

@@ -18,6 +18,7 @@ _VIDEO_CODEC_KEY = "video_codec"
 _MAX_SIZE_KEY = "max_size"
 _VIDEO_BIT_RATE_KEY = "video_bit_rate"
 _MAX_FPS_KEY = "max_fps"
+_AUTO_CONNECT_SINGLE_DEVICE_KEY = "auto_connect_single_device"
 
 AUDIO_CODECS = ("opus", "aac", "flac", "raw")
 VIDEO_CODECS = ("h264", "h265", "av1")
@@ -44,6 +45,7 @@ class SettingsViewModel(QObject):
     maxSizeChanged = Signal(int)
     videoBitRateChanged = Signal(int)
     maxFpsChanged = Signal(int)
+    autoConnectSingleDeviceChanged = Signal(bool)
 
     def __init__(self, store: SettingsStore, parent=None):
         super().__init__(parent)
@@ -62,6 +64,9 @@ class SettingsViewModel(QObject):
         self._max_size = int(self._store.get(_MAX_SIZE_KEY, "0"))
         self._video_bit_rate = int(self._store.get(_VIDEO_BIT_RATE_KEY, "8000000"))
         self._max_fps = int(self._store.get(_MAX_FPS_KEY, "0"))
+        self._auto_connect_single_device = (
+            self._store.get(_AUTO_CONNECT_SINGLE_DEVICE_KEY, "1") == "1"
+        )
 
     @Property(str, notify=screenshotDirChanged)
     def screenshotDir(self) -> str:
@@ -184,3 +189,15 @@ class SettingsViewModel(QObject):
         self._max_fps = value
         self._store.set(_MAX_FPS_KEY, str(value))
         self.maxFpsChanged.emit(value)
+
+    @Property(bool, notify=autoConnectSingleDeviceChanged)
+    def autoConnectSingleDevice(self) -> bool:
+        return self._auto_connect_single_device
+
+    @autoConnectSingleDevice.setter
+    def autoConnectSingleDevice(self, value: bool) -> None:
+        if value == self._auto_connect_single_device:
+            return
+        self._auto_connect_single_device = value
+        self._store.set(_AUTO_CONNECT_SINGLE_DEVICE_KEY, "1" if value else "0")
+        self.autoConnectSingleDeviceChanged.emit(value)

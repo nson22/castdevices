@@ -24,6 +24,7 @@ def _pil_to_qimage(pil_image) -> QImage:
 
 class DeviceListViewModel(QObject):
     previewReady = Signal(str)
+    singleDeviceFound = Signal(str)
 
     def __init__(self, preview_provider: DevicePreviewProvider, parent=None):
         super().__init__(parent)
@@ -46,6 +47,9 @@ class DeviceListViewModel(QObject):
                 model_name = ""
             entries.append({"serial": device.serial, "deviceModel": model_name})
         self._model.set_devices(entries)
+
+        if len(devices) == 1:
+            self.singleDeviceFound.emit(devices[0].serial)
 
         for device in devices:
             threading.Thread(target=self._capture_preview, args=(device,), daemon=True).start()

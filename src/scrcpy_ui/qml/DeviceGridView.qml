@@ -7,6 +7,15 @@ Item {
 
     Component.onCompleted: deviceListViewModel.refresh()
 
+    Connections {
+        target: deviceListViewModel
+        function onSingleDeviceFound(serial) {
+            if (settingsViewModel.autoConnectSingleDevice) {
+                mirrorViewModel.connectToDevice(serial)
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
