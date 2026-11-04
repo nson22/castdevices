@@ -156,14 +156,22 @@ class ScrcpyConnection:
         return expected_codec
 
     def close(self) -> None:
-        for sock in (self.video_sock, self.audio_sock, self.control_sock):
+        """Idempotente -- tanto a worker thread (no finally, quando o socket
+        cai) quanto disconnectDevice() (chamado da UI) podem chamar close()
+        para a mesma conexão; adbutils.AdbConnection.close() não é seguro pra
+        chamar duas vezes (dá AttributeError na segunda), daí zerar as
+        referências depois de fechar."""
+        for attr in ("video_sock", "audio_sock", "control_sock"):
+            sock = getattr(self, attr)
             if sock is not None:
                 try:
                     sock.close()
                 except OSError:
                     pass
+                setattr(self, attr, None)
         if self._shell_conn is not None:
             try:
                 self._shell_conn.close()
-            except OSError:
+            except (OSError, AttributeError):
                 pass
+            self._shell_conn = None

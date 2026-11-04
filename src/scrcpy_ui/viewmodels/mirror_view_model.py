@@ -49,6 +49,7 @@ from scrcpy_ui.protocol.control_stream import (
 from scrcpy_ui.protocol.video_stream import iter_video_packets
 from scrcpy_ui.video.decoder import VideoDecoder
 from scrcpy_ui.video.frame_bridge import av_frame_to_qvideoframe
+from scrcpy_ui.video.recorder import SessionRecorder
 from scrcpy_ui.viewmodels.settings_view_model import SettingsViewModel
 
 
@@ -61,6 +62,8 @@ class MirrorViewModel(QObject):
     clipboardReceived = Signal(str)
     screenPowerChanged = Signal(bool)
     audioDataReady = Signal(bytes)
+    recordingChanged = Signal(bool)
+    recordingSaved = Signal(str)
 
     def __init__(self, settings_view_model: SettingsViewModel, parent=None):
         super().__init__(parent)
@@ -74,6 +77,11 @@ class MirrorViewModel(QObject):
         self._screen_on = True
         self._audio_player = AudioPlayer(self)
         self._audio_active = False
+        self._session_video_codec: str | None = None
+        self._session_width = 0
+        self._session_height = 0
+        self._recorder: SessionRecorder | None = None
+        self._recording_path: Path | None = None
 
         self.frameReady.connect(self._on_frame_ready)
         self.clipboardReceived.connect(self._on_clipboard_received)
@@ -121,6 +129,9 @@ class MirrorViewModel(QObject):
         self._control_sender = ControlSender(connection.control_sock)
         self._mouse_mapper = MouseMapper(info.width, info.height)
         self._audio_active = audio_enabled and connection.audio_sock is not None
+        self._session_video_codec = video_codec
+        self._session_width = info.width
+        self._session_height = info.height
         self.connected.emit(info.name, info.width, info.height)
 
         device_msg_thread = threading.Thread(
@@ -137,6 +148,8 @@ class MirrorViewModel(QObject):
         decoder = VideoDecoder(video_codec)
         try:
             for packet in iter_video_packets(connection.video_sock, video_codec):
+                if self._recorder is not None:
+                    self._recorder.write_video(packet)
                 for frame in decoder.decode(packet):
                     self.frameReady.emit(av_frame_to_qvideoframe(frame))
         except (ConnectionError, OSError):
@@ -148,6 +161,7 @@ class MirrorViewModel(QObject):
                 "pode não estar disponível nesta instalação."
             )
         finally:
+            self._stop_recording_internal()
             connection.close()
             self._connection = None
             self._control_sender = None
@@ -159,6 +173,8 @@ class MirrorViewModel(QObject):
         decoder = None if codec == "raw" else AudioDecoder(codec)
         try:
             for packet in iter_audio_packets(connection.audio_sock):
+                if self._recorder is not None:
+                    self._recorder.write_audio(packet)
                 pcm = packet.data if decoder is None else decoder.decode(packet)
                 if pcm:
                     self.audioDataReady.emit(pcm)
@@ -197,6 +213,50 @@ class MirrorViewModel(QObject):
         self._last_frame = frame
         if self._video_sink is not None:
             self._video_sink.setVideoFrame(frame)
+
+    @Property(bool, notify=recordingChanged)
+    def isRecording(self) -> bool:
+        return self._recorder is not None
+
+    @Slot()
+    def toggleRecording(self) -> None:
+        if self._recorder is not None:
+            self._stop_recording_internal()
+            return
+        if self._connection is None or self._session_video_codec is None:
+            self.errorOccurred.emit("Conecte num device antes de gravar")
+            return
+        recording_dir = Path(self._settings.recordingDir)
+        recording_dir.mkdir(parents=True, exist_ok=True)
+        path = recording_dir / f"scrcpy-ui_{datetime.now():%Y%m%d_%H%M%S}.mkv"
+        try:
+            self._recorder = SessionRecorder(
+                str(path),
+                self._session_video_codec,
+                self._session_width,
+                self._session_height,
+                audio_codec=self._settings.audioCodec if self._audio_active else None,
+            )
+        except Exception as exc:
+            self.errorOccurred.emit(f"Falha ao iniciar gravação: {exc}")
+            return
+        self._recording_path = path
+        self.recordingChanged.emit(True)
+
+    def _stop_recording_internal(self) -> None:
+        recorder = self._recorder
+        if recorder is None:
+            return
+        # Zera a referência ANTES de fechar: assim as threads de vídeo/áudio
+        # (que checam "self._recorder is not None" antes de cada escrita) já
+        # param de tentar escrever antes do close(); o lock interno do
+        # SessionRecorder cobre qualquer escrita que já estava em andamento.
+        self._recorder = None
+        recorder.close()
+        if self._recording_path is not None:
+            self.recordingSaved.emit(str(self._recording_path))
+        self._recording_path = None
+        self.recordingChanged.emit(False)
 
     @Slot()
     def takeScreenshot(self) -> None:

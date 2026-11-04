@@ -71,6 +71,28 @@ Item {
                 }
 
                 Label {
+                    text: "Pasta para salvar gravações (.mkv)"
+                    font.bold: true
+                    Layout.topMargin: 16
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    TextField {
+                        id: recordingPathField
+                        Layout.fillWidth: true
+                        readOnly: true
+                        text: settingsViewModel.recordingDir
+                    }
+                    Button {
+                        text: "Escolher..."
+                        onClicked: recordingFolderDialog.open()
+                    }
+                }
+
+                Label {
                     text: "Conexão"
                     font.bold: true
                     Layout.topMargin: 16
@@ -210,5 +232,11 @@ Item {
         id: folderDialog
         title: "Escolher pasta para screenshots"
         onAccepted: settingsViewModel.setScreenshotDir(selectedFolder)
+    }
+
+    FolderDialog {
+        id: recordingFolderDialog
+        title: "Escolher pasta para gravações"
+        onAccepted: settingsViewModel.setRecordingDir(selectedFolder)
     }
 }
