@@ -18,8 +18,11 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtMultimedia import QVideoFrame, QVideoSink
 
 from scrcpy_ui.adb import client
+from scrcpy_ui.audio.decoder import AudioDecoder
+from scrcpy_ui.audio.player import AudioPlayer
 from scrcpy_ui.input.keyboard_mapper import qt_key_to_android_keycode
 from scrcpy_ui.input.mouse_mapper import MouseMapper
+from scrcpy_ui.protocol.audio_stream import iter_audio_packets
 from scrcpy_ui.protocol.connection import ScrcpyConnection
 from scrcpy_ui.protocol.constants import (
     ANDROID_KEYCODE_APP_SWITCH,
@@ -56,6 +59,7 @@ class MirrorViewModel(QObject):
     screenshotSaved = Signal(str)
     clipboardReceived = Signal(str)
     screenPowerChanged = Signal(bool)
+    audioDataReady = Signal(bytes)
 
     def __init__(self, settings_view_model: SettingsViewModel, parent=None):
         super().__init__(parent)
@@ -67,9 +71,14 @@ class MirrorViewModel(QObject):
         self._worker: threading.Thread | None = None
         self._last_frame: QVideoFrame | None = None
         self._screen_on = True
+        self._audio_player = AudioPlayer(self)
+        self._audio_active = False
 
         self.frameReady.connect(self._on_frame_ready)
         self.clipboardReceived.connect(self._on_clipboard_received)
+        self.audioDataReady.connect(self._audio_player.write)
+        self.connected.connect(self._on_connected)
+        self.disconnected.connect(self._on_disconnected)
 
     @Slot(QVideoSink)
     def attachVideoSink(self, sink: QVideoSink) -> None:
@@ -88,11 +97,15 @@ class MirrorViewModel(QObject):
             self._connection.close()
 
     def _run(self, serial: str) -> None:
+        audio_enabled = self._settings.audioEnabled
+        audio_codec = self._settings.audioCodec
         connection = ScrcpyConnection(client.get_device(serial))
         try:
             info = connection.open(
                 stay_awake=self._settings.stayAwake,
                 show_touches=self._settings.showTouches,
+                audio=audio_enabled,
+                audio_codec=audio_codec,
             )
         except Exception as exc:
             self.errorOccurred.emit(str(exc))
@@ -101,12 +114,19 @@ class MirrorViewModel(QObject):
         self._connection = connection
         self._control_sender = ControlSender(connection.control_sock)
         self._mouse_mapper = MouseMapper(info.width, info.height)
+        self._audio_active = audio_enabled and connection.audio_sock is not None
         self.connected.emit(info.name, info.width, info.height)
 
         device_msg_thread = threading.Thread(
             target=self._drain_device_messages, daemon=True
         )
         device_msg_thread.start()
+
+        if self._audio_active:
+            audio_thread = threading.Thread(
+                target=self._read_audio, args=(connection, audio_codec), daemon=True
+            )
+            audio_thread.start()
 
         decoder = H264Decoder()
         try:
@@ -120,6 +140,28 @@ class MirrorViewModel(QObject):
             self._connection = None
             self._control_sender = None
             self.disconnected.emit()
+
+    def _read_audio(self, connection: ScrcpyConnection, codec: str) -> None:
+        if connection.audio_sock is None:
+            return
+        decoder = None if codec == "raw" else AudioDecoder(codec)
+        try:
+            for packet in iter_audio_packets(connection.audio_sock):
+                pcm = packet.data if decoder is None else decoder.decode(packet)
+                if pcm:
+                    self.audioDataReady.emit(pcm)
+        except (ConnectionError, OSError):
+            pass
+
+    @Slot(str, int, int)
+    def _on_connected(self, name: str, width: int, height: int) -> None:
+        if self._audio_active:
+            self._audio_player.start()
+
+    @Slot()
+    def _on_disconnected(self) -> None:
+        self._audio_player.stop()
+        self._audio_active = False
 
     def _drain_device_messages(self) -> None:
         connection = self._connection
