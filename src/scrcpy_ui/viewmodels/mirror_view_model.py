@@ -13,6 +13,7 @@ import threading
 from datetime import datetime
 from pathlib import Path
 
+import av
 from PySide6.QtCore import Property, QObject, Signal, Slot
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtMultimedia import QVideoFrame, QVideoSink
@@ -46,7 +47,7 @@ from scrcpy_ui.protocol.control_stream import (
     serialize_touch_event,
 )
 from scrcpy_ui.protocol.video_stream import iter_video_packets
-from scrcpy_ui.video.decoder import H264Decoder
+from scrcpy_ui.video.decoder import VideoDecoder
 from scrcpy_ui.video.frame_bridge import av_frame_to_qvideoframe
 from scrcpy_ui.viewmodels.settings_view_model import SettingsViewModel
 
@@ -99,6 +100,7 @@ class MirrorViewModel(QObject):
     def _run(self, serial: str) -> None:
         audio_enabled = self._settings.audioEnabled
         audio_codec = self._settings.audioCodec
+        video_codec = self._settings.videoCodec
         connection = ScrcpyConnection(client.get_device(serial))
         try:
             info = connection.open(
@@ -106,6 +108,10 @@ class MirrorViewModel(QObject):
                 show_touches=self._settings.showTouches,
                 audio=audio_enabled,
                 audio_codec=audio_codec,
+                video_codec=video_codec,
+                max_size=self._settings.maxSize,
+                video_bit_rate=self._settings.videoBitRate,
+                max_fps=self._settings.maxFps,
             )
         except Exception as exc:
             self.errorOccurred.emit(str(exc))
@@ -128,13 +134,19 @@ class MirrorViewModel(QObject):
             )
             audio_thread.start()
 
-        decoder = H264Decoder()
+        decoder = VideoDecoder(video_codec)
         try:
-            for packet in iter_video_packets(connection.video_sock):
+            for packet in iter_video_packets(connection.video_sock, video_codec):
                 for frame in decoder.decode(packet):
                     self.frameReady.emit(av_frame_to_qvideoframe(frame))
         except (ConnectionError, OSError):
             pass
+        except av.error.FFmpegError as exc:
+            self.errorOccurred.emit(
+                f"Erro decodificando vídeo ({video_codec}): {exc}. "
+                "O device pode suportar esse codec via hardware, mas o decoder "
+                "pode não estar disponível nesta instalação."
+            )
         finally:
             connection.close()
             self._connection = None
@@ -152,6 +164,8 @@ class MirrorViewModel(QObject):
                     self.audioDataReady.emit(pcm)
         except (ConnectionError, OSError):
             pass
+        except av.error.FFmpegError as exc:
+            self.errorOccurred.emit(f"Erro decodificando áudio ({codec}): {exc}")
 
     @Slot(str, int, int)
     def _on_connected(self, name: str, width: int, height: int) -> None:

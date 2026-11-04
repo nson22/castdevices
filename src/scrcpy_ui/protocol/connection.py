@@ -25,8 +25,8 @@ import adbutils
 from scrcpy_ui.adb import server_deploy
 from scrcpy_ui.protocol.constants import (
     AUDIO_CODEC_IDS,
-    CODEC_ID_H264,
     DEVICE_NAME_FIELD_LENGTH,
+    VIDEO_CODEC_IDS,
 )
 
 
@@ -55,6 +55,7 @@ class ScrcpyConnection:
         self.control_sock: socket.socket | None = None
         self.device_info: DeviceInfo | None = None
         self.audio_codec: str | None = None
+        self.video_codec: str | None = None
         self._shell_conn: adbutils.AdbConnection | None = None
         self._drain_thread: threading.Thread | None = None
 
@@ -66,6 +67,10 @@ class ScrcpyConnection:
         show_touches: bool = False,
         audio: bool = False,
         audio_codec: str = "opus",
+        video_codec: str = "h264",
+        max_size: int = 0,
+        video_bit_rate: int = 0,
+        max_fps: int = 0,
     ) -> DeviceInfo:
         server_deploy.ensure_server_pushed(self.device)
 
@@ -86,6 +91,10 @@ class ScrcpyConnection:
                 show_touches=show_touches,
                 audio=audio,
                 audio_codec=audio_codec,
+                video_codec=video_codec,
+                max_size=max_size,
+                video_bit_rate=video_bit_rate,
+                max_fps=max_fps,
             )
             self._drain_thread = threading.Thread(
                 target=self._drain_server_output, daemon=True
@@ -107,7 +116,8 @@ class ScrcpyConnection:
             self.device.reverse_remove(f"localabstract:{socket_name}")
             local_srv.close()
 
-        self.device_info = self._read_device_info()
+        self.device_info = self._read_device_info(video_codec)
+        self.video_codec = video_codec
         if audio:
             self.audio_codec = self._read_audio_codec(audio_codec)
         return self.device_info
@@ -120,16 +130,16 @@ class ScrcpyConnection:
         except OSError:
             pass
 
-    def _read_device_info(self) -> DeviceInfo:
+    def _read_device_info(self, expected_video_codec: str) -> DeviceInfo:
         assert self.video_sock is not None
         name_buf = recv_exact(self.video_sock, DEVICE_NAME_FIELD_LENGTH)
         name = name_buf.split(b"\0", 1)[0].decode("utf-8", errors="replace")
 
         codec_id = struct.unpack(">I", recv_exact(self.video_sock, 4))[0]
-        if codec_id != CODEC_ID_H264:
+        if codec_id != VIDEO_CODEC_IDS.get(expected_video_codec):
             raise RuntimeError(
                 f"Codec de vídeo inesperado: 0x{codec_id:08x} "
-                "(só h264 é suportado nesta fase)"
+                f"(esperava {expected_video_codec!r} -- device/encoder pode não suportar)"
             )
 
         header = recv_exact(self.video_sock, 12)
