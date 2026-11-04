@@ -26,6 +26,13 @@ _AUDIO_MUX_CODECS = {
     "raw": "pcm_s16le",
 }
 
+# pts/dts do scrcpy vêm em microssegundos -- fixo, nunca ler de volta de
+# stream.time_base: o muxer matroska reescreve o time_base do stream pra
+# 1/1000 (granularidade nativa dele) assim que o primeiro pacote é escrito,
+# e usar esse valor já coagido pros pacotes seguintes infla os timestamps em
+# 1000x (foi exatamente a causa da tela preta ao dar play).
+_PTS_TIME_BASE = Fraction(1, 1_000_000)
+
 
 class SessionRecorder:
     def __init__(
@@ -43,8 +50,14 @@ class SessionRecorder:
         self._video_stream = self._container.add_stream(decoder_name)
         self._video_stream.width = width
         self._video_stream.height = height
-        self._video_stream.time_base = Fraction(1, 1_000_000)
         self._video_started = False
+        # O pts que vem do device é um timestamp bruto do clock de uptime do
+        # aparelho (ex.: ~540000s = horas ligado), não relativo ao início da
+        # gravação. Sem reajustar pra zero, o arquivo fica com start_time/
+        # duration absurdos e a maioria dos players mostra tela preta porque
+        # não acham nenhum frame em t=0. Por isso tudo é escrito relativo ao
+        # pts do primeiro keyframe.
+        self._pts_offset: int | None = None
 
         self._audio_codec = audio_codec
         self._audio_stream = None
@@ -52,7 +65,6 @@ class SessionRecorder:
             self._audio_stream = self._container.add_stream(
                 _AUDIO_MUX_CODECS[audio_codec], rate=48000
             )
-            self._audio_stream.time_base = Fraction(1, 1_000_000)
 
     def write_video(self, packet: VideoPacket) -> None:
         if packet.is_config:
@@ -61,8 +73,9 @@ class SessionRecorder:
             if not packet.is_key:
                 return  # precisa comecar a gravação num keyframe
             self._video_started = True
+            self._pts_offset = packet.pts
         with self._lock:
-            self._mux(packet.data, packet.pts, self._video_stream, packet.is_key)
+            self._mux(packet.data, packet.pts - self._pts_offset, self._video_stream, packet.is_key)
 
     def write_audio(self, packet: AudioPacket) -> None:
         if self._audio_stream is None:
@@ -71,14 +84,16 @@ class SessionRecorder:
             if self._audio_codec == "aac":
                 self._audio_stream.codec_context.extradata = packet.data
             return
+        if self._pts_offset is None or packet.pts < self._pts_offset:
+            return  # vídeo ainda não achou o primeiro keyframe -- descarta
         with self._lock:
-            self._mux(packet.data, packet.pts, self._audio_stream, True)
+            self._mux(packet.data, packet.pts - self._pts_offset, self._audio_stream, True)
 
     def _mux(self, data: bytes, pts: int, stream: av.stream.Stream, is_key: bool) -> None:
         av_packet = av.Packet(data)
         av_packet.pts = pts
         av_packet.dts = pts
-        av_packet.time_base = stream.time_base
+        av_packet.time_base = _PTS_TIME_BASE
         av_packet.stream = stream
         if is_key:
             av_packet.is_keyframe = True
