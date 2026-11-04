@@ -29,8 +29,9 @@ class DevicePreviewProvider(QQuickImageProvider):
         with self._lock:
             image = self._images.get(serial)
         if image is None:
-            image = QImage(1, 1, QImage.Format.Format_RGB32)
-            image.fill(0x202124)
+            # Transparente: o card mostra o próprio fundo enquanto o preview não chega
+            image = QImage(1, 1, QImage.Format.Format_ARGB32)
+            image.fill(0)
         if size is not None:
             size.setWidth(image.width())
             size.setHeight(image.height())

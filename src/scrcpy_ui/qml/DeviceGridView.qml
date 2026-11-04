@@ -20,111 +20,192 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        Rectangle {
-            id: topBar
+        AppBar {
             Layout.fillWidth: true
-            height: 40
-            color: "#1b1b1f"
+            title: "Dispositivos"
+            subtitle: grid.count === 0 ? "Nenhum conectado"
+                    : grid.count === 1 ? "1 conectado"
+                    : grid.count + " conectados"
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 12
-                anchors.rightMargin: 4
-
-                Label {
-                    text: "Devices"
-                    font.pixelSize: 16
-                    font.bold: true
-                    Layout.fillWidth: true
-                }
-                ToolButton {
-                    text: "refresh"
-                    font.family: "Material Icons"
-                    font.pixelSize: 22
-                    ToolTip.text: "Atualizar"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
-                    onClicked: deviceListViewModel.refresh()
-                }
+            IconButton {
+                iconName: "refresh"
+                tip: "Atualizar"
+                onClicked: deviceListViewModel.refresh()
             }
         }
 
-        GridView {
-            id: gridView
+        Item {
+            id: body
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.margins: 16
-            clip: true
-            cellWidth: 170
-            cellHeight: 280
-            model: deviceListViewModel.deviceListModel
 
-            delegate: Item {
-                id: delegateRoot
-                required property string serial
-                required property string deviceModel
-                required property int previewRevision
+            GridView {
+                id: grid
 
-                width: gridView.cellWidth
-                height: gridView.cellHeight
+                // Container centralizado com max-width + colunas calculadas pela largura
+                readonly property int minCellWidth: 200
+                readonly property int availableWidth: Math.min(body.width - Theme.spacingXl * 2,
+                                                                Theme.maxGridWidth)
+                readonly property int columns: Math.max(1, Math.floor(availableWidth / minCellWidth))
 
-                Rectangle {
-                    anchors.fill: parent
-                    anchors.margins: 8
-                    radius: 8
-                    color: "#1b1b1f"
-                    border.color: "#333338"
+                width: availableWidth
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.topMargin: Theme.spacingXl - Theme.spacingSm
+                cellWidth: Math.floor(availableWidth / columns)
+                cellHeight: Math.round(cellWidth * 1.25)
+                clip: true
+                model: deviceListViewModel.deviceListModel
+                visible: count > 0
 
-                    Image {
-                        id: preview
-                        anchors.fill: parent
-                        anchors.margins: 1
-                        fillMode: Image.PreserveAspectFit
-                        source: "image://devicepreviews/" + delegateRoot.serial + "/" + delegateRoot.previewRevision
-                        asynchronous: true
-                    }
+                delegate: Item {
+                    id: cell
+                    required property string serial
+                    required property string deviceModel
+                    required property int previewRevision
+
+                    width: grid.cellWidth
+                    height: grid.cellHeight
 
                     Rectangle {
-                        anchors.centerIn: parent
-                        width: 56
-                        height: 56
-                        radius: width / 2
-                        color: "#000000"
-                        opacity: playArea.containsMouse ? 0.75 : 0.55
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "play_arrow"
-                            font.family: "Material Icons"
-                            color: "white"
-                            font.pixelSize: 28
-                        }
-                    }
-
-                    MouseArea {
-                        id: playArea
-                        hoverEnabled: true
+                        id: card
                         anchors.fill: parent
-                        onClicked: mirrorViewModel.connectToDevice(delegateRoot.serial)
-                    }
+                        anchors.margins: Theme.spacingSm
+                        radius: Theme.radiusLg
+                        color: area.containsMouse ? Theme.surfaceHover : Theme.surface
+                        border.width: 1
+                        border.color: area.containsMouse ? Theme.accent : Theme.border
 
-                    Label {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.bottom: parent.bottom
-                        anchors.margins: 6
-                        elide: Text.ElideRight
-                        horizontalAlignment: Text.AlignHCenter
-                        text: delegateRoot.deviceModel.length > 0 ? delegateRoot.deviceModel : delegateRoot.serial
+                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Behavior on border.color { ColorAnimation { duration: 120 } }
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: Theme.spacingMd
+                            spacing: Theme.spacingMd
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                radius: Theme.radiusMd
+                                color: Theme.videoBackground
+
+                                Image {
+                                    anchors.fill: parent
+                                    anchors.margins: Theme.spacingXs
+                                    fillMode: Image.PreserveAspectFit
+                                    asynchronous: true
+                                    source: "image://devicepreviews/" + cell.serial + "/" + cell.previewRevision
+                                }
+
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: 56
+                                    height: 56
+                                    radius: width / 2
+                                    color: Theme.accent
+                                    opacity: area.containsMouse ? 1 : 0.88
+                                    scale: area.containsMouse ? 1.08 : 1
+
+                                    Behavior on scale { NumberAnimation { duration: 120 } }
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "play_arrow"
+                                        font.family: Theme.iconFont
+                                        font.pixelSize: 32
+                                        color: Theme.accentText
+                                    }
+                                }
+                            }
+
+                            ColumnLayout {
+                                spacing: 2
+                                Layout.fillWidth: true
+
+                                Label {
+                                    text: cell.deviceModel.length > 0 ? cell.deviceModel : cell.serial
+                                    color: Theme.textPrimary
+                                    font.pixelSize: Theme.fontBody
+                                    font.weight: Font.DemiBold
+                                    elide: Text.ElideRight
+                                    Layout.fillWidth: true
+                                }
+                                Label {
+                                    text: cell.deviceModel.length > 0 ? cell.serial : "Modelo desconhecido"
+                                    color: Theme.textSecondary
+                                    font.pixelSize: Theme.fontCaption
+                                    elide: Text.ElideRight
+                                    Layout.fillWidth: true
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            id: area
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: mirrorViewModel.connectToDevice(cell.serial)
+                        }
                     }
                 }
             }
 
-            Label {
+            ColumnLayout {
                 anchors.centerIn: parent
-                visible: gridView.count === 0
-                horizontalAlignment: Text.AlignHCenter
-                text: "Nenhum device encontrado.\nConecte via USB com depuração habilitada."
+                width: Math.min(parent.width - Theme.spacingXl * 2, 420)
+                spacing: Theme.spacingMd
+                visible: grid.count === 0
+
+                Text {
+                    text: "phonelink_off"
+                    font.family: Theme.iconFont
+                    font.pixelSize: 56
+                    color: Theme.textSecondary
+                    Layout.alignment: Qt.AlignHCenter
+                }
+                Label {
+                    text: "Nenhum dispositivo encontrado"
+                    color: Theme.textPrimary
+                    font.pixelSize: Theme.fontTitle
+                    font.weight: Font.DemiBold
+                    Layout.alignment: Qt.AlignHCenter
+                }
+                Label {
+                    text: "Conecte um Android via USB com a depuração USB ativada e toque em Atualizar."
+                    color: Theme.textSecondary
+                    font.pixelSize: Theme.fontBody
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
+                    Layout.fillWidth: true
+                }
+                Button {
+                    id: emptyRefresh
+                    text: "Atualizar"
+                    leftPadding: Theme.spacingXl
+                    rightPadding: Theme.spacingXl
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.topMargin: Theme.spacingSm
+                    onClicked: deviceListViewModel.refresh()
+
+                    contentItem: Label {
+                        text: emptyRefresh.text
+                        color: Theme.accentText
+                        font.pixelSize: Theme.fontBody
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    background: Rectangle {
+                        implicitHeight: 40
+                        radius: Theme.radiusSm
+                        color: emptyRefresh.down ? Qt.darker(Theme.accent, 1.15)
+                             : emptyRefresh.hovered ? Qt.lighter(Theme.accent, 1.08)
+                             : Theme.accent
+                    }
+                }
             }
         }
     }

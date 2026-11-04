@@ -6,34 +6,20 @@ import QtQuick.Dialogs
 Item {
     id: root
 
+    // Largura padrão dos controles da coluna direita (ComboBox, SpinBox...)
+    readonly property int controlWidth: 220
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-        Rectangle {
+        AppBar {
             Layout.fillWidth: true
-            height: 40
-            color: "#1b1b1f"
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 4
-                spacing: 8
-
-                ToolButton {
-                    text: "arrow_back"
-                    font.family: "Material Icons"
-                    font.pixelSize: 22
-                    ToolTip.text: "Voltar"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
-                    onClicked: root.StackView.view.pop()
-                }
-                Label {
-                    text: "Configurações"
-                    font.bold: true
-                    font.pixelSize: 16
-                }
+            title: "Configurações"
+            leading: IconButton {
+                iconName: "arrow_back"
+                tip: "Voltar"
+                onClicked: root.StackView.view.pop()
             }
         }
 
@@ -44,197 +30,189 @@ Item {
             clip: true
             contentWidth: availableWidth
 
-            ColumnLayout {
+            // Container centralizado com max-width e padding (como um
+            // `max-width: 760px; margin: 0 auto; padding: 32px 24px` no CSS)
+            Item {
                 width: scrollView.availableWidth
-                Layout.margins: 16
-                spacing: 8
+                implicitHeight: content.implicitHeight + Theme.spacingXxl * 2
 
-                Label {
-                    text: "Pasta para salvar screenshots"
-                    font.bold: true
-                }
+                ColumnLayout {
+                    id: content
+                    width: Math.min(parent.width - Theme.spacingXl * 2, Theme.maxContentWidth)
+                    x: (parent.width - width) / 2
+                    y: Theme.spacingXxl
+                    spacing: Theme.spacingLg
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
+                    SettingsSection {
+                        title: "Aparência"
 
-                    TextField {
-                        id: pathField
-                        Layout.fillWidth: true
-                        readOnly: true
-                        text: settingsViewModel.screenshotDir
+                        SettingRow {
+                            label: "Tema"
+                            description: "\"Sistema\" acompanha o tema claro/escuro do Windows."
+                            showDivider: false
+
+                            ComboBox {
+                                readonly property var values: ["system", "light", "dark"]
+                                Layout.preferredWidth: root.controlWidth
+                                Layout.fillWidth: true
+                                model: ["Sistema", "Claro", "Escuro"]
+                                currentIndex: Math.max(0, values.indexOf(settingsViewModel.themeMode))
+                                onActivated: settingsViewModel.themeMode = values[currentIndex]
+                            }
+                        }
                     }
-                    Button {
-                        text: "Escolher..."
-                        onClicked: folderDialog.open()
+
+                    SettingsSection {
+                        title: "Conexão"
+                        description: "Mudanças aqui valem a partir da próxima conexão."
+
+                        SettingRow {
+                            label: "Conectar automaticamente"
+                            description: "Abre o espelhamento sozinho quando só há um device conectado."
+                            showDivider: false
+
+                            Switch {
+                                checked: settingsViewModel.autoConnectSingleDevice
+                                onToggled: settingsViewModel.autoConnectSingleDevice = checked
+                            }
+                        }
+                        SettingRow {
+                            label: "Manter o device acordado"
+                            description: "Impede que a tela do device apague enquanto espelhado."
+
+                            Switch {
+                                checked: settingsViewModel.stayAwake
+                                onToggled: settingsViewModel.stayAwake = checked
+                            }
+                        }
+                        SettingRow {
+                            label: "Mostrar toques"
+                            description: "Exibe um indicador visual onde você toca no device."
+
+                            Switch {
+                                checked: settingsViewModel.showTouches
+                                onToggled: settingsViewModel.showTouches = checked
+                            }
+                        }
                     }
-                }
 
-                Label {
-                    text: "Pasta para salvar gravações (.mkv)"
-                    font.bold: true
-                    Layout.topMargin: 16
-                }
+                    SettingsSection {
+                        title: "Vídeo"
+                        description: "h265 e av1 dependem de encoder de hardware no device; se não houver, a conexão falha."
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
+                        SettingRow {
+                            label: "Codec"
+                            showDivider: false
 
-                    TextField {
-                        id: recordingPathField
-                        Layout.fillWidth: true
-                        readOnly: true
-                        text: settingsViewModel.recordingDir
+                            ComboBox {
+                                Layout.preferredWidth: root.controlWidth
+                                Layout.fillWidth: true
+                                model: ["h264", "h265", "av1"]
+                                currentIndex: Math.max(0, model.indexOf(settingsViewModel.videoCodec))
+                                onActivated: settingsViewModel.videoCodec = model[currentIndex]
+                            }
+                        }
+                        SettingRow {
+                            label: "Resolução máxima"
+                            description: "Limita o maior lado da imagem. Valores menores reduzem latência."
+
+                            ComboBox {
+                                readonly property var values: [0, 1920, 1280, 1024, 800, 640]
+                                Layout.preferredWidth: root.controlWidth
+                                Layout.fillWidth: true
+                                model: ["Nativa", "1920 px", "1280 px", "1024 px", "800 px", "640 px"]
+                                currentIndex: Math.max(0, values.indexOf(settingsViewModel.maxSize))
+                                onActivated: settingsViewModel.maxSize = values[currentIndex]
+                            }
+                        }
+                        SettingRow {
+                            label: "Bitrate (Mbps)"
+
+                            SpinBox {
+                                Layout.preferredWidth: root.controlWidth
+                                Layout.fillWidth: true
+                                from: 1
+                                to: 50
+                                editable: true
+                                value: settingsViewModel.videoBitRate / 1000000
+                                onValueModified: settingsViewModel.videoBitRate = value * 1000000
+                            }
+                        }
+                        SettingRow {
+                            label: "FPS máximo"
+
+                            ComboBox {
+                                readonly property var values: [0, 30, 60]
+                                Layout.preferredWidth: root.controlWidth
+                                Layout.fillWidth: true
+                                model: ["Sem limite", "30", "60"]
+                                currentIndex: Math.max(0, values.indexOf(settingsViewModel.maxFps))
+                                onActivated: settingsViewModel.maxFps = values[currentIndex]
+                            }
+                        }
                     }
-                    Button {
-                        text: "Escolher..."
-                        onClicked: recordingFolderDialog.open()
+
+                    SettingsSection {
+                        title: "Áudio"
+                        description: "Requer Android 11 ou superior."
+
+                        SettingRow {
+                            label: "Transmitir áudio do device"
+                            showDivider: false
+
+                            Switch {
+                                checked: settingsViewModel.audioEnabled
+                                onToggled: settingsViewModel.audioEnabled = checked
+                            }
+                        }
+                        SettingRow {
+                            label: "Codec"
+                            description: "opus é o mais leve; raw não comprime (mais qualidade, mais banda)."
+                            enabled: settingsViewModel.audioEnabled
+                            opacity: enabled ? 1 : 0.5
+
+                            ComboBox {
+                                Layout.preferredWidth: root.controlWidth
+                                Layout.fillWidth: true
+                                model: ["opus", "aac", "flac", "raw"]
+                                currentIndex: Math.max(0, model.indexOf(settingsViewModel.audioCodec))
+                                onActivated: settingsViewModel.audioCodec = model[currentIndex]
+                            }
+                        }
                     }
-                }
 
-                Label {
-                    text: "Conexão"
-                    font.bold: true
-                    Layout.topMargin: 16
-                }
+                    SettingsSection {
+                        title: "Armazenamento"
 
-                Switch {
-                    text: "Conectar automaticamente quando só houver um device"
-                    checked: settingsViewModel.autoConnectSingleDevice
-                    onToggled: settingsViewModel.autoConnectSingleDevice = checked
-                }
-                Switch {
-                    text: "Manter o device sempre acordado enquanto espelhado"
-                    checked: settingsViewModel.stayAwake
-                    onToggled: settingsViewModel.stayAwake = checked
-                }
-                Switch {
-                    text: "Mostrar indicador visual de toques no device"
-                    checked: settingsViewModel.showTouches
-                    onToggled: settingsViewModel.showTouches = checked
-                }
-                Label {
-                    text: "Essas duas opções só têm efeito na próxima conexão."
-                    font.italic: true
-                    opacity: 0.7
-                    wrapMode: Text.WordWrap
-                    Layout.fillWidth: true
-                }
+                        SettingRow {
+                            label: "Pasta de screenshots"
+                            description: settingsViewModel.screenshotDir
+                            showDivider: false
 
-                Label {
-                    text: "Vídeo"
-                    font.bold: true
-                    Layout.topMargin: 16
-                }
+                            Button {
+                                text: "Alterar…"
+                                flat: true
+                                onClicked: screenshotFolderDialog.open()
+                            }
+                        }
+                        SettingRow {
+                            label: "Pasta de gravações (.mkv)"
+                            description: settingsViewModel.recordingDir
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-
-                    Label { text: "Codec:" }
-                    ComboBox {
-                        id: videoCodecCombo
-                        Layout.fillWidth: true
-                        model: ["h264", "h265", "av1"]
-                        currentIndex: model.indexOf(settingsViewModel.videoCodec)
-                        onActivated: settingsViewModel.videoCodec = model[currentIndex]
+                            Button {
+                                text: "Alterar…"
+                                flat: true
+                                onClicked: recordingFolderDialog.open()
+                            }
+                        }
                     }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-
-                    Label { text: "Resolução máx.:" }
-                    ComboBox {
-                        id: maxSizeCombo
-                        Layout.fillWidth: true
-                        readonly property var sizeValues: [0, 1920, 1280, 1024, 800, 640]
-                        model: ["Nativa (sem limite)", "1920", "1280", "1024", "800", "640"]
-                        currentIndex: Math.max(0, sizeValues.indexOf(settingsViewModel.maxSize))
-                        onActivated: settingsViewModel.maxSize = sizeValues[currentIndex]
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-
-                    Label { text: "Bitrate (Mbps):" }
-                    SpinBox {
-                        id: bitRateSpin
-                        Layout.fillWidth: true
-                        from: 1
-                        to: 50
-                        value: settingsViewModel.videoBitRate / 1000000
-                        onValueModified: settingsViewModel.videoBitRate = value * 1000000
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-
-                    Label { text: "FPS máx.:" }
-                    ComboBox {
-                        id: maxFpsCombo
-                        Layout.fillWidth: true
-                        readonly property var fpsValues: [0, 30, 60]
-                        model: ["Sem limite", "30", "60"]
-                        currentIndex: Math.max(0, fpsValues.indexOf(settingsViewModel.maxFps))
-                        onActivated: settingsViewModel.maxFps = fpsValues[currentIndex]
-                    }
-                }
-                Label {
-                    text: "h265/av1 dependem de suporte de hardware do device " +
-                          "(encoder) -- se não tiver, a conexão vai falhar. Essas " +
-                          "opções só têm efeito na próxima conexão."
-                    font.italic: true
-                    opacity: 0.7
-                    wrapMode: Text.WordWrap
-                    Layout.fillWidth: true
-                }
-
-                Label {
-                    text: "Áudio"
-                    font.bold: true
-                    Layout.topMargin: 16
-                }
-
-                Switch {
-                    text: "Transmitir áudio do device"
-                    checked: settingsViewModel.audioEnabled
-                    onToggled: settingsViewModel.audioEnabled = checked
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-                    enabled: settingsViewModel.audioEnabled
-
-                    Label { text: "Codec:" }
-                    ComboBox {
-                        id: audioCodecCombo
-                        Layout.fillWidth: true
-                        model: ["opus", "aac", "flac", "raw"]
-                        currentIndex: model.indexOf(settingsViewModel.audioCodec)
-                        onActivated: settingsViewModel.audioCodec = model[currentIndex]
-                    }
-                }
-                Label {
-                    text: "Áudio só é suportado em Android 11+. \"opus\" é o mais leve; " +
-                          "\"raw\" não comprime (mais qualidade, mais banda). Efeito só na próxima conexão."
-                    font.italic: true
-                    opacity: 0.7
-                    wrapMode: Text.WordWrap
-                    Layout.fillWidth: true
                 }
             }
         }
     }
 
     FolderDialog {
-        id: folderDialog
+        id: screenshotFolderDialog
         title: "Escolher pasta para screenshots"
         onAccepted: settingsViewModel.setScreenshotDir(selectedFolder)
     }

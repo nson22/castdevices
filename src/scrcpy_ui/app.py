@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
 from PySide6.QtGui import QFont, QFontDatabase, QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
+from PySide6.QtQuickControls2 import QQuickStyle
 
 from scrcpy_ui.storage.settings_store import SettingsStore
 from scrcpy_ui.viewmodels.device_list_view_model import DeviceListViewModel
@@ -27,7 +29,16 @@ def _load_fonts(app: QGuiApplication) -> None:
         app.setFont(QFont(roboto_families[0]))
 
 
+def configure_style() -> None:
+    """Material: controles nativos herdam as cores do Theme.qml (via
+    Material.theme/accent/background no Main.qml). Variante densa, mais
+    adequada a desktop. Precisa rodar antes de criar o QGuiApplication."""
+    os.environ.setdefault("QT_QUICK_CONTROLS_MATERIAL_VARIANT", "Dense")
+    QQuickStyle.setStyle("Material")
+
+
 def run() -> int:
+    configure_style()
     app = QGuiApplication(sys.argv)
     app.setOrganizationName("scrcpy-ui")
     app.setApplicationName("scrcpy-ui")
@@ -35,7 +46,6 @@ def run() -> int:
 
     preview_provider = DevicePreviewProvider()
     device_list_view_model = DeviceListViewModel(preview_provider)
-    device_list_view_model.refresh()
 
     settings_store = SettingsStore()
     settings_view_model = SettingsViewModel(settings_store)

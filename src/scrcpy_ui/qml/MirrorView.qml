@@ -15,129 +15,88 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        Rectangle {
-            id: topBar
+        AppBar {
             Layout.fillWidth: true
-            height: 40
-            color: "#1b1b1f"
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 4
-                anchors.rightMargin: 4
-                spacing: 0
-
-                ToolButton {
-                    text: "arrow_back"
-                    font.family: "Material Icons"
-                    font.pixelSize: 22
-                    ToolTip.text: "Voltar (Android)"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
+            leading: [
+                IconButton {
+                    iconName: "arrow_back"
+                    tip: "Voltar (Android)"
                     onClicked: mirrorViewModel.sendBack()
-                }
-                ToolButton {
-                    text: "home"
-                    font.family: "Material Icons"
-                    font.pixelSize: 22
-                    ToolTip.text: "Home"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
+                },
+                IconButton {
+                    iconName: "home"
+                    tip: "Home"
                     onClicked: mirrorViewModel.sendHome()
-                }
-                ToolButton {
-                    text: "crop_square"
-                    font.family: "Material Icons"
-                    font.pixelSize: 22
-                    ToolTip.text: "Apps recentes"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
+                },
+                IconButton {
+                    iconName: "crop_square"
+                    tip: "Apps recentes"
                     onClicked: mirrorViewModel.sendRecents()
                 }
+            ]
 
-                Item { Layout.fillWidth: true }
+            IconButton {
+                iconName: mirrorViewModel.isRecording ? "stop" : "fiber_manual_record"
+                iconColor: mirrorViewModel.isRecording ? Theme.danger : Theme.textPrimary
+                tip: mirrorViewModel.isRecording ? "Parar gravação" : "Gravar tela"
+                onClicked: mirrorViewModel.toggleRecording()
+            }
+            IconButton {
+                iconName: "photo_camera"
+                tip: "Screenshot"
+                onClicked: mirrorViewModel.takeScreenshot()
+            }
+            IconButton {
+                id: moreButton
+                iconName: "more_vert"
+                tip: "Mais ações"
+                onClicked: moreMenu.open()
 
-                ToolButton {
-                    text: mirrorViewModel.isRecording ? "stop_circle" : "fiber_manual_record"
-                    font.family: "Material Icons"
-                    font.pixelSize: 22
-                    palette.buttonText: mirrorViewModel.isRecording ? "#ff5252" : palette.windowText
-                    ToolTip.text: mirrorViewModel.isRecording ? "Parar gravação" : "Gravar tela"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
-                    onClicked: mirrorViewModel.toggleRecording()
-                }
-                ToolButton {
-                    text: "photo_camera"
-                    font.family: "Material Icons"
-                    font.pixelSize: 22
-                    ToolTip.text: "Screenshot"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
-                    onClicked: mirrorViewModel.takeScreenshot()
-                }
-                ToolButton {
-                    id: moreButton
-                    text: "more_vert"
-                    font.family: "Material Icons"
-                    font.pixelSize: 22
-                    ToolTip.text: "Mais ações"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
-                    onClicked: moreMenu.open()
+                Menu {
+                    id: moreMenu
+                    y: moreButton.height
 
-                    Menu {
-                        id: moreMenu
-                        y: moreButton.height
-
-                        MenuItem {
-                            text: "Girar tela"
-                            onTriggered: mirrorViewModel.rotateDevice()
-                        }
-                        MenuItem {
-                            text: mirrorViewModel.screenOn ? "Desligar tela" : "Ligar tela"
-                            onTriggered: mirrorViewModel.toggleScreenPower()
-                        }
-                        MenuItem {
-                            text: "Expandir notificações"
-                            onTriggered: mirrorViewModel.expandNotifications()
-                        }
-                        MenuSeparator {}
-                        MenuItem {
-                            text: "Copiar clipboard do device"
-                            onTriggered: mirrorViewModel.copyClipboardFromDevice()
-                        }
-                        MenuItem {
-                            text: "Colar clipboard no device"
-                            onTriggered: mirrorViewModel.pasteClipboardToDevice()
-                        }
+                    MenuItem {
+                        text: "Girar tela"
+                        onTriggered: mirrorViewModel.rotateDevice()
+                    }
+                    MenuItem {
+                        text: mirrorViewModel.screenOn ? "Desligar tela" : "Ligar tela"
+                        onTriggered: mirrorViewModel.toggleScreenPower()
+                    }
+                    MenuItem {
+                        text: "Expandir notificações"
+                        onTriggered: mirrorViewModel.expandNotifications()
+                    }
+                    MenuSeparator {}
+                    MenuItem {
+                        text: "Copiar clipboard do device"
+                        onTriggered: mirrorViewModel.copyClipboardFromDevice()
+                    }
+                    MenuItem {
+                        text: "Colar clipboard no device"
+                        onTriggered: mirrorViewModel.pasteClipboardToDevice()
                     }
                 }
-                ToolButton {
-                    text: "settings"
-                    font.family: "Material Icons"
-                    font.pixelSize: 22
-                    ToolTip.text: "Configurações"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
-                    onClicked: root.StackView.view.push(settingsComponent)
-                }
-                ToolButton {
-                    text: "power_settings_new"
-                    font.family: "Material Icons"
-                    font.pixelSize: 22
-                    ToolTip.text: "Desconectar"
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 400
-                    onClicked: mirrorViewModel.disconnectDevice()
-                }
+            }
+            IconButton {
+                iconName: "settings"
+                tip: "Configurações"
+                onClicked: root.StackView.view.push(settingsComponent)
+            }
+            IconButton {
+                iconName: "power_settings_new"
+                tip: "Desconectar"
+                onClicked: mirrorViewModel.disconnectDevice()
             }
         }
 
-        Item {
+        Rectangle {
             id: videoArea
             Layout.fillWidth: true
             Layout.fillHeight: true
+            color: Theme.videoBackground
             focus: true
 
             VideoOutput {
@@ -197,14 +156,59 @@ Item {
                 event.accepted = true
             }
 
+            // Indicador de gravação
+            Rectangle {
+                visible: mirrorViewModel.isRecording
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.margins: Theme.spacingMd
+                height: 28
+                width: recRow.implicitWidth + Theme.spacingMd * 2
+                radius: height / 2
+                color: Theme.scrim
+
+                RowLayout {
+                    id: recRow
+                    anchors.centerIn: parent
+                    spacing: Theme.spacingSm
+
+                    Rectangle {
+                        width: 10
+                        height: 10
+                        radius: 5
+                        color: Theme.danger
+
+                        SequentialAnimation on opacity {
+                            running: mirrorViewModel.isRecording
+                            loops: Animation.Infinite
+                            NumberAnimation { to: 0.3; duration: 700 }
+                            NumberAnimation { to: 1; duration: 700 }
+                        }
+                    }
+                    Label {
+                        text: "Gravando"
+                        color: Theme.scrimText
+                        font.pixelSize: Theme.fontCaption
+                        font.weight: Font.DemiBold
+                    }
+                }
+            }
+
+            // Toast
             Label {
                 id: toast
-                anchors.top: parent.top
+                anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                anchors.topMargin: 8
-                padding: 8
-                background: Rectangle { color: "#cc000000"; radius: 6 }
-                color: "white"
+                anchors.bottomMargin: Theme.spacingXl
+                width: Math.min(implicitWidth, parent.width - Theme.spacingXl * 2)
+                leftPadding: Theme.spacingLg
+                rightPadding: Theme.spacingLg
+                topPadding: Theme.spacingSm + 2
+                bottomPadding: Theme.spacingSm + 2
+                background: Rectangle { color: Theme.scrim; radius: Theme.radiusMd }
+                color: Theme.scrimText
+                font.pixelSize: Theme.fontBody
+                elide: Text.ElideMiddle
                 opacity: 0
                 visible: opacity > 0
                 z: 10
@@ -213,7 +217,7 @@ Item {
 
                 Timer {
                     id: hideTimer
-                    interval: 2200
+                    interval: 2600
                     onTriggered: toast.opacity = 0
                 }
 

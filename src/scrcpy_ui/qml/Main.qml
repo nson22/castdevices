@@ -1,14 +1,28 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 
 ApplicationWindow {
     id: window
-    width: 480
-    height: 860
-    minimumWidth: 320
+    width: 1100
+    height: 760
+    minimumWidth: 360
+    minimumHeight: 480
     visible: true
     title: "scrcpy-ui"
-    color: "#121214"
+    color: Theme.background
+
+    // Controles nativos (Switch, ComboBox, Menu, Dialog...) herdam os tokens
+    Material.theme: Theme.dark ? Material.Dark : Material.Light
+    Material.accent: Theme.accent
+    Material.background: Theme.surface
+    Material.foreground: Theme.textPrimary
+
+    Binding {
+        target: Theme
+        property: "mode"
+        value: settingsViewModel.themeMode
+    }
 
     StackView {
         id: stackView
@@ -44,12 +58,18 @@ ApplicationWindow {
 
     Dialog {
         id: errorDialog
-        anchors.centerIn: parent
-        title: "Erro ao conectar"
-        standardButtons: Dialog.Ok
         property alias text: errorLabel.text
+
+        anchors.centerIn: parent
+        width: Math.min(parent.width - Theme.spacingXl * 2, 480)
+        modal: true
+        title: "Algo deu errado"
+        standardButtons: Dialog.Ok
+
         Label {
             id: errorLabel
+            width: parent.width
+            color: Theme.textPrimary
             wrapMode: Text.WordWrap
         }
     }

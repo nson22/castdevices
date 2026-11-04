@@ -1,0 +1,8 @@
+singleton Theme 1.0 Theme.qml
+AppBar 1.0 AppBar.qml
+IconButton 1.0 IconButton.qml
+SettingsSection 1.0 SettingsSection.qml
+SettingRow 1.0 SettingRow.qml
+DeviceGridView 1.0 DeviceGridView.qml
+MirrorView 1.0 MirrorView.qml
+SettingsView 1.0 SettingsView.qml

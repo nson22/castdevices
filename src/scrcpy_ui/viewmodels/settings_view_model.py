@@ -19,9 +19,11 @@ _MAX_SIZE_KEY = "max_size"
 _VIDEO_BIT_RATE_KEY = "video_bit_rate"
 _MAX_FPS_KEY = "max_fps"
 _AUTO_CONNECT_SINGLE_DEVICE_KEY = "auto_connect_single_device"
+_THEME_MODE_KEY = "theme_mode"
 
 AUDIO_CODECS = ("opus", "aac", "flac", "raw")
 VIDEO_CODECS = ("h264", "h265", "av1")
+THEME_MODES = ("system", "light", "dark")
 
 
 def _default_screenshot_dir() -> str:
@@ -46,6 +48,7 @@ class SettingsViewModel(QObject):
     videoBitRateChanged = Signal(int)
     maxFpsChanged = Signal(int)
     autoConnectSingleDeviceChanged = Signal(bool)
+    themeModeChanged = Signal(str)
 
     def __init__(self, store: SettingsStore, parent=None):
         super().__init__(parent)
@@ -67,6 +70,9 @@ class SettingsViewModel(QObject):
         self._auto_connect_single_device = (
             self._store.get(_AUTO_CONNECT_SINGLE_DEVICE_KEY, "1") == "1"
         )
+        self._theme_mode = self._store.get(_THEME_MODE_KEY, "system")
+        if self._theme_mode not in THEME_MODES:
+            self._theme_mode = "system"
 
     @Property(str, notify=screenshotDirChanged)
     def screenshotDir(self) -> str:
@@ -201,3 +207,15 @@ class SettingsViewModel(QObject):
         self._auto_connect_single_device = value
         self._store.set(_AUTO_CONNECT_SINGLE_DEVICE_KEY, "1" if value else "0")
         self.autoConnectSingleDeviceChanged.emit(value)
+
+    @Property(str, notify=themeModeChanged)
+    def themeMode(self) -> str:
+        return self._theme_mode
+
+    @themeMode.setter
+    def themeMode(self, value: str) -> None:
+        if value == self._theme_mode or value not in THEME_MODES:
+            return
+        self._theme_mode = value
+        self._store.set(_THEME_MODE_KEY, value)
+        self.themeModeChanged.emit(value)
