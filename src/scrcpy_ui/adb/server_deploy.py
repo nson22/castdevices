@@ -38,6 +38,7 @@ def start_server(
     *,
     video: bool = True,
     audio: bool = False,
+    audio_codec: str = "opus",
     control: bool = True,
     stay_awake: bool = False,
     show_touches: bool = False,
@@ -53,6 +54,8 @@ def start_server(
         f"audio={'true' if audio else 'false'}",
         f"control={'true' if control else 'false'}",
     ]
+    if audio:
+        cmd.append(f"audio_codec={audio_codec}")
     if stay_awake:
         cmd.append("stay_awake=true")
     if show_touches:

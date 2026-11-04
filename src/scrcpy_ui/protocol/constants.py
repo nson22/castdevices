@@ -11,6 +11,21 @@ from enum import IntEnum
 DEVICE_NAME_FIELD_LENGTH = 64
 CODEC_ID_H264 = 0x68323634  # b"h264"
 
+# Codecs de audio suportados pelo scrcpy-server (audio_codec=<nome>).
+CODEC_ID_OPUS = 0x6F707573  # b"opus"
+CODEC_ID_AAC = 0x00616163  # b"\0aac"
+CODEC_ID_FLAC = 0x666C6163  # b"flac"
+CODEC_ID_RAW = 0x00726177  # b"\0raw" -- PCM S16LE sem encoding, sem decode necessario
+
+AUDIO_CODEC_IDS = {
+    "opus": CODEC_ID_OPUS,
+    "aac": CODEC_ID_AAC,
+    "flac": CODEC_ID_FLAC,
+    "raw": CODEC_ID_RAW,
+}
+AUDIO_SAMPLE_RATE = 48000
+AUDIO_CHANNELS = 2
+
 PACKET_HEADER_SIZE = 12
 PACKET_FLAG_CONFIG = 1 << 62
 PACKET_FLAG_KEY_FRAME = 1 << 61
