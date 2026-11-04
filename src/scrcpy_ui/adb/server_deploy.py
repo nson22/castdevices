@@ -37,6 +37,10 @@ def start_server(
     scid: int,
     *,
     video: bool = True,
+    video_codec: str = "h264",
+    max_size: int = 0,
+    video_bit_rate: int = 0,
+    max_fps: int = 0,
     audio: bool = False,
     audio_codec: str = "opus",
     control: bool = True,
@@ -54,6 +58,15 @@ def start_server(
         f"audio={'true' if audio else 'false'}",
         f"control={'true' if control else 'false'}",
     ]
+    if video:
+        if video_codec != "h264":
+            cmd.append(f"video_codec={video_codec}")
+        if max_size:
+            cmd.append(f"max_size={max_size}")
+        if video_bit_rate:
+            cmd.append(f"video_bit_rate={video_bit_rate}")
+        if max_fps:
+            cmd.append(f"max_fps={max_fps}")
     if audio:
         cmd.append(f"audio_codec={audio_codec}")
     if stay_awake:

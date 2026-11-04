@@ -10,6 +10,23 @@ from enum import IntEnum
 
 DEVICE_NAME_FIELD_LENGTH = 64
 CODEC_ID_H264 = 0x68323634  # b"h264"
+CODEC_ID_H265 = 0x68323635  # b"h265"
+CODEC_ID_AV1 = 0x00617631  # b"\0av1"
+
+VIDEO_CODEC_IDS = {
+    "h264": CODEC_ID_H264,
+    "h265": CODEC_ID_H265,
+    "av1": CODEC_ID_AV1,
+}
+# Nome do decoder equivalente no ffmpeg/PyAV (h265 chama "hevc" lá).
+VIDEO_DECODER_NAMES = {
+    "h264": "h264",
+    "h265": "hevc",
+    "av1": "av1",
+}
+# Merge de pacote de config com o próximo pacote de mídia só existe pra
+# H.264/H.265 no scrcpy -- ver video_stream.py.
+VIDEO_CODECS_WITH_CONFIG_MERGE = {"h264", "h265"}
 
 # Codecs de audio suportados pelo scrcpy-server (audio_codec=<nome>).
 CODEC_ID_OPUS = 0x6F707573  # b"opus"

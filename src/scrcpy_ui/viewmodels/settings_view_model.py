@@ -13,8 +13,13 @@ _STAY_AWAKE_KEY = "stay_awake"
 _SHOW_TOUCHES_KEY = "show_touches"
 _AUDIO_ENABLED_KEY = "audio_enabled"
 _AUDIO_CODEC_KEY = "audio_codec"
+_VIDEO_CODEC_KEY = "video_codec"
+_MAX_SIZE_KEY = "max_size"
+_VIDEO_BIT_RATE_KEY = "video_bit_rate"
+_MAX_FPS_KEY = "max_fps"
 
 AUDIO_CODECS = ("opus", "aac", "flac", "raw")
+VIDEO_CODECS = ("h264", "h265", "av1")
 
 
 def _default_screenshot_dir() -> str:
@@ -28,6 +33,10 @@ class SettingsViewModel(QObject):
     showTouchesChanged = Signal(bool)
     audioEnabledChanged = Signal(bool)
     audioCodecChanged = Signal(str)
+    videoCodecChanged = Signal(str)
+    maxSizeChanged = Signal(int)
+    videoBitRateChanged = Signal(int)
+    maxFpsChanged = Signal(int)
 
     def __init__(self, store: SettingsStore, parent=None):
         super().__init__(parent)
@@ -39,6 +48,12 @@ class SettingsViewModel(QObject):
         self._audio_codec = self._store.get(_AUDIO_CODEC_KEY, "opus")
         if self._audio_codec not in AUDIO_CODECS:
             self._audio_codec = "opus"
+        self._video_codec = self._store.get(_VIDEO_CODEC_KEY, "h264")
+        if self._video_codec not in VIDEO_CODECS:
+            self._video_codec = "h264"
+        self._max_size = int(self._store.get(_MAX_SIZE_KEY, "0"))
+        self._video_bit_rate = int(self._store.get(_VIDEO_BIT_RATE_KEY, "8000000"))
+        self._max_fps = int(self._store.get(_MAX_FPS_KEY, "0"))
 
     @Property(str, notify=screenshotDirChanged)
     def screenshotDir(self) -> str:
@@ -100,3 +115,51 @@ class SettingsViewModel(QObject):
         self._audio_codec = value
         self._store.set(_AUDIO_CODEC_KEY, value)
         self.audioCodecChanged.emit(value)
+
+    @Property(str, notify=videoCodecChanged)
+    def videoCodec(self) -> str:
+        return self._video_codec
+
+    @videoCodec.setter
+    def videoCodec(self, value: str) -> None:
+        if value == self._video_codec or value not in VIDEO_CODECS:
+            return
+        self._video_codec = value
+        self._store.set(_VIDEO_CODEC_KEY, value)
+        self.videoCodecChanged.emit(value)
+
+    @Property(int, notify=maxSizeChanged)
+    def maxSize(self) -> int:
+        return self._max_size
+
+    @maxSize.setter
+    def maxSize(self, value: int) -> None:
+        if value == self._max_size:
+            return
+        self._max_size = value
+        self._store.set(_MAX_SIZE_KEY, str(value))
+        self.maxSizeChanged.emit(value)
+
+    @Property(int, notify=videoBitRateChanged)
+    def videoBitRate(self) -> int:
+        return self._video_bit_rate
+
+    @videoBitRate.setter
+    def videoBitRate(self, value: int) -> None:
+        if value == self._video_bit_rate:
+            return
+        self._video_bit_rate = value
+        self._store.set(_VIDEO_BIT_RATE_KEY, str(value))
+        self.videoBitRateChanged.emit(value)
+
+    @Property(int, notify=maxFpsChanged)
+    def maxFps(self) -> int:
+        return self._max_fps
+
+    @maxFps.setter
+    def maxFps(self, value: int) -> None:
+        if value == self._max_fps:
+            return
+        self._max_fps = value
+        self._store.set(_MAX_FPS_KEY, str(value))
+        self.maxFpsChanged.emit(value)
