@@ -86,6 +86,41 @@ Item {
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
+
+            Label {
+                text: "Áudio"
+                font.bold: true
+                Layout.topMargin: 16
+            }
+
+            Switch {
+                text: "Transmitir áudio do device"
+                checked: settingsViewModel.audioEnabled
+                onToggled: settingsViewModel.audioEnabled = checked
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                enabled: settingsViewModel.audioEnabled
+
+                Label { text: "Codec:" }
+                ComboBox {
+                    id: audioCodecCombo
+                    Layout.fillWidth: true
+                    model: ["opus", "aac", "flac", "raw"]
+                    currentIndex: model.indexOf(settingsViewModel.audioCodec)
+                    onActivated: settingsViewModel.audioCodec = model[currentIndex]
+                }
+            }
+            Label {
+                text: "Áudio só é suportado em Android 11+. \"opus\" é o mais leve; " +
+                      "\"raw\" não comprime (mais qualidade, mais banda). Efeito só na próxima conexão."
+                font.italic: true
+                opacity: 0.7
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
         }
 
         Item { Layout.fillHeight: true }
