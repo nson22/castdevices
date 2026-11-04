@@ -58,6 +58,16 @@ Item {
                 Item { Layout.fillWidth: true }
 
                 ToolButton {
+                    text: mirrorViewModel.isRecording ? "stop_circle" : "fiber_manual_record"
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
+                    palette.buttonText: mirrorViewModel.isRecording ? "#ff5252" : palette.windowText
+                    ToolTip.text: mirrorViewModel.isRecording ? "Parar gravação" : "Gravar tela"
+                    ToolTip.visible: hovered
+                    ToolTip.delay: 400
+                    onClicked: mirrorViewModel.toggleRecording()
+                }
+                ToolButton {
                     text: "photo_camera"
                     font.family: "Material Icons"
                     font.pixelSize: 22
@@ -220,6 +230,9 @@ Item {
         target: mirrorViewModel
         function onScreenshotSaved(path) {
             toast.show("Screenshot salvo em " + path)
+        }
+        function onRecordingSaved(path) {
+            toast.show("Gravação salva em " + path)
         }
     }
 }
