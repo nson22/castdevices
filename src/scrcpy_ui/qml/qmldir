@@ -2,6 +2,7 @@ singleton Theme 1.0 Theme.qml
 AppBar 1.0 AppBar.qml
 AppBarSeparator 1.0 AppBarSeparator.qml
 IconButton 1.0 IconButton.qml
+InspectorPanel 1.0 InspectorPanel.qml
 SettingsSection 1.0 SettingsSection.qml
 SettingRow 1.0 SettingRow.qml
 DeviceGridView 1.0 DeviceGridView.qml

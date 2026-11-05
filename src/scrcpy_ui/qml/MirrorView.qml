@@ -68,6 +68,20 @@ Item {
             AppBarSeparator {}
 
             IconButton {
+                id: inspectorToggle
+                objectName: "inspectorToggle"
+                iconName: "account_tree"
+                tip: checked ? "Ocultar hierarquia da tela" : "Mostrar hierarquia da tela"
+                checkable: true
+                onToggled: {
+                    if (checked) {
+                        inspectorPanel.refresh()
+                    } else {
+                        inspectorViewModel.clearSelection()
+                    }
+                }
+            }
+            IconButton {
                 iconName: "settings"
                 tip: "Configurações"
                 onClicked: root.StackView.view.push(settingsComponent)
@@ -79,140 +93,176 @@ Item {
             }
         }
 
-        Rectangle {
-            id: videoArea
+        SplitView {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: Theme.videoBackground
-            focus: true
+            orientation: Qt.Horizontal
 
-            VideoOutput {
-                id: videoOutput
-                anchors.fill: parent
-                fillMode: VideoOutput.PreserveAspectFit
-
-                onContentRectChanged: mirrorViewModel.setContentRect(contentRect.x, contentRect.y, contentRect.width, contentRect.height)
-
-                Component.onCompleted: mirrorViewModel.attachVideoSink(videoOutput.videoSink)
+            handle: Rectangle {
+                implicitWidth: 4
+                color: SplitHandle.pressed || SplitHandle.hovered ? Theme.accent : Theme.border
             }
 
-            MouseArea {
-                id: mouseArea
-                anchors.fill: videoOutput
-                acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                hoverEnabled: false
-
-                // Android não tem um gesto nativo de "clique direito"/"clique do meio"
-                // sobre toque -- só o botão esquerdo gera um toque de fato (down/move/up).
-                // Direito e meio disparam Voltar/Home (mesmo default do scrcpy original).
-                property bool touchActive: false
-
-                onPressed: function (mouse) {
-                    videoArea.forceActiveFocus()
-                    if (mouse.button === Qt.RightButton) {
-                        mirrorViewModel.sendBack()
-                    } else if (mouse.button === Qt.MiddleButton) {
-                        mirrorViewModel.sendHome()
-                    } else {
-                        touchActive = true
-                        mirrorViewModel.sendMousePress(mouse.x, mouse.y, mouse.buttons)
-                    }
-                }
-                onPositionChanged: function (mouse) {
-                    if (touchActive) {
-                        mirrorViewModel.sendMouseMove(mouse.x, mouse.y, mouse.buttons)
-                    }
-                }
-                onReleased: function (mouse) {
-                    if (touchActive && mouse.button === Qt.LeftButton) {
-                        touchActive = false
-                        mirrorViewModel.sendMouseRelease(mouse.x, mouse.y, mouse.buttons)
-                    }
-                }
-                onWheel: function (wheel) {
-                    mirrorViewModel.sendWheel(wheel.x, wheel.y, wheel.angleDelta.x / 8, wheel.angleDelta.y / 8)
-                }
-            }
-
-            Keys.onPressed: function (event) {
-                mirrorViewModel.sendKey(event.key, true)
-                event.accepted = true
-            }
-            Keys.onReleased: function (event) {
-                mirrorViewModel.sendKey(event.key, false)
-                event.accepted = true
-            }
-
-            // Indicador de gravação
             Rectangle {
-                visible: mirrorViewModel.isRecording
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.margins: Theme.spacingMd
-                height: 28
-                width: recRow.implicitWidth + Theme.spacingMd * 2
-                radius: height / 2
-                color: Theme.scrim
+                id: videoArea
+                SplitView.fillWidth: true
+                SplitView.minimumWidth: 240
+                color: Theme.videoBackground
+                focus: true
 
-                RowLayout {
-                    id: recRow
-                    anchors.centerIn: parent
-                    spacing: Theme.spacingSm
+                VideoOutput {
+                    id: videoOutput
+                    anchors.fill: parent
+                    fillMode: VideoOutput.PreserveAspectFit
 
-                    Rectangle {
-                        width: 10
-                        height: 10
-                        radius: 5
-                        color: Theme.danger
+                    onContentRectChanged: mirrorViewModel.setContentRect(contentRect.x, contentRect.y, contentRect.width, contentRect.height)
 
-                        SequentialAnimation on opacity {
-                            running: mirrorViewModel.isRecording
-                            loops: Animation.Infinite
-                            NumberAnimation { to: 0.3; duration: 700 }
-                            NumberAnimation { to: 1; duration: 700 }
+                    Component.onCompleted: mirrorViewModel.attachVideoSink(videoOutput.videoSink)
+                }
+
+                MouseArea {
+                    id: mouseArea
+                    anchors.fill: videoOutput
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                    hoverEnabled: false
+
+                    // Android não tem um gesto nativo de "clique direito"/"clique do meio"
+                    // sobre toque -- só o botão esquerdo gera um toque de fato (down/move/up).
+                    // Direito e meio disparam Voltar/Home (mesmo default do scrcpy original).
+                    property bool touchActive: false
+
+                    onPressed: function (mouse) {
+                        videoArea.forceActiveFocus()
+                        if (mouse.button === Qt.RightButton) {
+                            mirrorViewModel.sendBack()
+                        } else if (mouse.button === Qt.MiddleButton) {
+                            mirrorViewModel.sendHome()
+                        } else {
+                            touchActive = true
+                            mirrorViewModel.sendMousePress(mouse.x, mouse.y, mouse.buttons)
                         }
                     }
-                    Label {
-                        text: "Gravando"
-                        color: Theme.scrimText
-                        font.pixelSize: Theme.fontCaption
-                        font.weight: Font.DemiBold
+                    onPositionChanged: function (mouse) {
+                        if (touchActive) {
+                            mirrorViewModel.sendMouseMove(mouse.x, mouse.y, mouse.buttons)
+                        }
+                    }
+                    onReleased: function (mouse) {
+                        if (touchActive && mouse.button === Qt.LeftButton) {
+                            touchActive = false
+                            mirrorViewModel.sendMouseRelease(mouse.x, mouse.y, mouse.buttons)
+                        }
+                    }
+                    onWheel: function (wheel) {
+                        mirrorViewModel.sendWheel(wheel.x, wheel.y, wheel.angleDelta.x / 8, wheel.angleDelta.y / 8)
+                    }
+                }
+
+                // Destaque do elemento selecionado na árvore. Os bounds vêm em pixels
+                // físicos da tela do device; o vídeo pode estar reduzido (resolução
+                // máxima), então converte pela proporção da área do vídeo.
+                Rectangle {
+                    readonly property rect bounds: inspectorViewModel.selectedBounds
+                    readonly property real sx: videoOutput.contentRect.width / Math.max(1, inspectorViewModel.screenWidth)
+                    readonly property real sy: videoOutput.contentRect.height / Math.max(1, inspectorViewModel.screenHeight)
+
+                    visible: inspectorToggle.checked && inspectorViewModel.hasSelection
+                    x: videoOutput.contentRect.x + bounds.x * sx
+                    y: videoOutput.contentRect.y + bounds.y * sy
+                    width: bounds.width * sx
+                    height: bounds.height * sy
+                    color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
+                    border.color: Theme.accent
+                    border.width: 2
+                }
+
+                Keys.onPressed: function (event) {
+                    mirrorViewModel.sendKey(event.key, true)
+                    event.accepted = true
+                }
+                Keys.onReleased: function (event) {
+                    mirrorViewModel.sendKey(event.key, false)
+                    event.accepted = true
+                }
+
+                // Indicador de gravação
+                Rectangle {
+                    visible: mirrorViewModel.isRecording
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.margins: Theme.spacingMd
+                    height: 28
+                    width: recRow.implicitWidth + Theme.spacingMd * 2
+                    radius: height / 2
+                    color: Theme.scrim
+
+                    RowLayout {
+                        id: recRow
+                        anchors.centerIn: parent
+                        spacing: Theme.spacingSm
+
+                        Rectangle {
+                            width: 10
+                            height: 10
+                            radius: 5
+                            color: Theme.danger
+
+                            SequentialAnimation on opacity {
+                                running: mirrorViewModel.isRecording
+                                loops: Animation.Infinite
+                                NumberAnimation { to: 0.3; duration: 700 }
+                                NumberAnimation { to: 1; duration: 700 }
+                            }
+                        }
+                        Label {
+                            text: "Gravando"
+                            color: Theme.scrimText
+                            font.pixelSize: Theme.fontCaption
+                            font.weight: Font.DemiBold
+                        }
+                    }
+                }
+
+                // Toast
+                Label {
+                    id: toast
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.bottomMargin: Theme.spacingXl
+                    width: Math.min(implicitWidth, parent.width - Theme.spacingXl * 2)
+                    leftPadding: Theme.spacingLg
+                    rightPadding: Theme.spacingLg
+                    topPadding: Theme.spacingSm + 2
+                    bottomPadding: Theme.spacingSm + 2
+                    background: Rectangle { color: Theme.scrim; radius: Theme.radiusMd }
+                    color: Theme.scrimText
+                    font.pixelSize: Theme.fontBody
+                    elide: Text.ElideMiddle
+                    opacity: 0
+                    visible: opacity > 0
+                    z: 10
+
+                    Behavior on opacity { NumberAnimation { duration: 200 } }
+
+                    Timer {
+                        id: hideTimer
+                        interval: 2600
+                        onTriggered: toast.opacity = 0
+                    }
+
+                    function show(message) {
+                        toast.text = message
+                        toast.opacity = 1
+                        hideTimer.restart()
                     }
                 }
             }
 
-            // Toast
-            Label {
-                id: toast
-                anchors.bottom: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottomMargin: Theme.spacingXl
-                width: Math.min(implicitWidth, parent.width - Theme.spacingXl * 2)
-                leftPadding: Theme.spacingLg
-                rightPadding: Theme.spacingLg
-                topPadding: Theme.spacingSm + 2
-                bottomPadding: Theme.spacingSm + 2
-                background: Rectangle { color: Theme.scrim; radius: Theme.radiusMd }
-                color: Theme.scrimText
-                font.pixelSize: Theme.fontBody
-                elide: Text.ElideMiddle
-                opacity: 0
-                visible: opacity > 0
-                z: 10
-
-                Behavior on opacity { NumberAnimation { duration: 200 } }
-
-                Timer {
-                    id: hideTimer
-                    interval: 2600
-                    onTriggered: toast.opacity = 0
-                }
-
-                function show(message) {
-                    toast.text = message
-                    toast.opacity = 1
-                    hideTimer.restart()
-                }
+            InspectorPanel {
+                id: inspectorPanel
+                visible: inspectorToggle.checked
+                SplitView.preferredWidth: 380
+                SplitView.minimumWidth: 280
             }
         }
     }

@@ -19,15 +19,18 @@ ToolButton {
         font.family: Theme.iconFont
         font.pixelSize: 22
         font.variableAxes: ({ "FILL": control.filled ? 1 : 0 })
-        color: control.enabled ? control.iconColor : Theme.textSecondary
+        color: !control.enabled ? Theme.textSecondary
+             : control.checked ? Theme.accent
+             : control.iconColor
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }
 
+    // checkable: true + checked -> estado "ligado" (fundo e ícone em destaque)
     background: Rectangle {
         radius: Theme.radiusSm
         color: control.down ? Theme.surfaceHover
-             : control.hovered ? Theme.surfaceAlt
+             : control.checked || control.hovered ? Theme.surfaceAlt
              : "transparent"
     }
 

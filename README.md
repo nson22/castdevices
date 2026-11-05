@@ -18,6 +18,8 @@ via [PyAV](https://pyav.org/) e renderiza numa UI em QML.
   girar tela, ligar/desligar a tela do device, expandir notificações
 - **Clipboard** bidirecional (copiar do device / colar no device)
 - **Screenshot** (PNG) e **gravação de tela** (vídeo + áudio num `.mkv`, sem recodificar)
+- **Inspetor de hierarquia**: árvore dos elementos da tela (`uiautomator dump`) ao lado do
+  espelhamento, com as propriedades do elemento selecionado e o destaque dele sobre o vídeo
 - **Grade de devices** com preview real (screenshot) e botão de play
 - Configurações persistidas localmente (SQLite): pasta de screenshots/gravações, codecs,
   stay-awake, show-touches, etc.

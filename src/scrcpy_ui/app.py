@@ -14,6 +14,7 @@ from scrcpy_ui.paths import FONTS_DIR, QML_DIR
 from scrcpy_ui.storage.settings_store import SettingsStore
 from scrcpy_ui.viewmodels.device_list_view_model import DeviceListViewModel
 from scrcpy_ui.viewmodels.device_preview_provider import DevicePreviewProvider, PreviewImageStore
+from scrcpy_ui.viewmodels.inspector_view_model import InspectorViewModel
 from scrcpy_ui.viewmodels.mirror_view_model import MirrorViewModel
 from scrcpy_ui.viewmodels.settings_view_model import SettingsViewModel
 
@@ -48,6 +49,8 @@ def run(dev_mode: bool = False) -> int:
     settings_store = SettingsStore()
     settings_view_model = SettingsViewModel(settings_store)
     mirror_view_model = MirrorViewModel(settings_view_model)
+    inspector_view_model = InspectorViewModel()
+    app.aboutToQuit.connect(mirror_view_model.shutdown)
 
     def create_engine(initial_properties: dict | None = None) -> QQmlApplicationEngine:
         engine = QQmlApplicationEngine()
@@ -57,6 +60,7 @@ def run(dev_mode: bool = False) -> int:
         context.setContextProperty("deviceListViewModel", device_list_view_model)
         context.setContextProperty("mirrorViewModel", mirror_view_model)
         context.setContextProperty("settingsViewModel", settings_view_model)
+        context.setContextProperty("inspectorViewModel", inspector_view_model)
         if initial_properties:
             engine.setInitialProperties(initial_properties)
         engine.load(str(QML_DIR / "Main.qml"))

@@ -74,6 +74,7 @@ class MirrorViewModel(QObject):
         self._video_sink: QVideoSink | None = None
         self._sink_token = 0
         self._worker: threading.Thread | None = None
+        self._audio_thread: threading.Thread | None = None
         self._last_frame: QVideoFrame | None = None
         self._screen_on = True
         self._audio_player = AudioPlayer(self)
@@ -112,6 +113,10 @@ class MirrorViewModel(QObject):
     def isConnected(self) -> bool:
         return self._connection is not None
 
+    @Property(str, notify=connectionChanged)
+    def deviceSerial(self) -> str:
+        return self._connection.device.serial if self._connection is not None else ""
+
     @Slot(str)
     def connectToDevice(self, serial: str) -> None:
         if self._worker is not None and self._worker.is_alive():
@@ -123,6 +128,17 @@ class MirrorViewModel(QObject):
     def disconnectDevice(self) -> None:
         if self._connection is not None:
             self._connection.close()
+
+    def shutdown(self) -> None:
+        """App fechando: finaliza a gravação (senão o .mkv fica sem o trailer
+        e corrompido) e encerra a sessão esperando as threads de leitura
+        terminarem enquanto os objetos Qt ainda existem -- sem isso elas
+        emitem sinais num objeto já destruído durante o encerramento."""
+        self._stop_recording_internal()
+        self.disconnectDevice()
+        for thread in (self._worker, self._audio_thread):
+            if thread is not None:
+                thread.join(timeout=2)
 
     def _run(self, serial: str) -> None:
         audio_enabled = self._settings.audioEnabled
@@ -159,10 +175,10 @@ class MirrorViewModel(QObject):
         device_msg_thread.start()
 
         if self._audio_active:
-            audio_thread = threading.Thread(
+            self._audio_thread = threading.Thread(
                 target=self._read_audio, args=(connection, audio_codec), daemon=True
             )
-            audio_thread.start()
+            self._audio_thread.start()
 
         decoder = VideoDecoder(video_codec)
         try:
