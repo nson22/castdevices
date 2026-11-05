@@ -101,8 +101,8 @@ Item {
                         description: "Mudanças aqui valem a partir da próxima conexão."
 
                         SettingRow {
-                            label: "Conectar automaticamente"
-                            description: "Abre o espelhamento sozinho quando só há um device conectado."
+                            label: "Abrir automaticamente com um único device"
+                            description: "Quando só um device estiver conectado, abre o espelhamento dele direto, sem passar pela grade."
                             showDivider: false
 
                             Switch {

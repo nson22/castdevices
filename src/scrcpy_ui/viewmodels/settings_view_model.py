@@ -68,7 +68,8 @@ class SettingsViewModel(QObject):
         self._video_bit_rate = int(self._store.get(_VIDEO_BIT_RATE_KEY, "8000000"))
         self._max_fps = int(self._store.get(_MAX_FPS_KEY, "0"))
         self._auto_connect_single_device = (
-            self._store.get(_AUTO_CONNECT_SINGLE_DEVICE_KEY, "1") == "1"
+            # Padrão desligado: o usuário escolhe na grade qual device abrir
+            self._store.get(_AUTO_CONNECT_SINGLE_DEVICE_KEY, "0") == "1"
         )
         self._theme_mode = self._store.get(_THEME_MODE_KEY, "system")
         if self._theme_mode not in THEME_MODES:
