@@ -46,6 +46,7 @@ from scrcpy_ui.protocol.control_stream import (
     serialize_touch_event,
 )
 from scrcpy_ui.protocol.video_stream import iter_video_packets
+from scrcpy_ui.video.change_detector import ScreenChangeDetector
 from scrcpy_ui.video.decoder import VideoDecoder
 from scrcpy_ui.video.frame_bridge import av_frame_to_qvideoframe
 from scrcpy_ui.video.recorder import SessionRecorder
@@ -57,6 +58,8 @@ class MirrorViewModel(QObject):
     disconnected = Signal()
     errorOccurred = Signal(str)
     frameReady = Signal(QVideoFrame)
+    # Conteúdo da tela mudou de fato (frames repetidos com a tela parada não contam)
+    screenContentChanged = Signal()
     screenshotSaved = Signal(str)
     clipboardReceived = Signal(str)
     screenPowerChanged = Signal(bool)
@@ -181,12 +184,15 @@ class MirrorViewModel(QObject):
             self._audio_thread.start()
 
         decoder = VideoDecoder(video_codec)
+        change_detector = ScreenChangeDetector()
         try:
             for packet in iter_video_packets(connection.video_sock, video_codec):
                 if self._recorder is not None:
                     self._recorder.write_video(packet)
                 for frame in decoder.decode(packet):
                     self.frameReady.emit(av_frame_to_qvideoframe(frame))
+                    if change_detector.changed(frame):
+                        self.screenContentChanged.emit()
         except (ConnectionError, OSError):
             pass
         except av.error.FFmpegError as exc:

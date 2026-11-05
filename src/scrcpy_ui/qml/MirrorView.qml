@@ -75,10 +75,11 @@ Item {
                 checkable: true
                 onToggled: {
                     if (checked) {
-                        inspectorPanel.refresh()
-                    } else {
-                        inspectorViewModel.clearSelection()
+                        // Abre dividindo a área meio a meio com o vídeo
+                        inspectorPanel.SplitView.preferredWidth = split.width / 2
                     }
+                    // Ativo: captura agora e recaptura quando a tela do device mudar
+                    inspectorViewModel.active = checked
                 }
             }
             IconButton {
@@ -94,6 +95,7 @@ Item {
         }
 
         SplitView {
+            id: split
             Layout.fillWidth: true
             Layout.fillHeight: true
             orientation: Qt.Horizontal
@@ -266,6 +268,9 @@ Item {
             }
         }
     }
+
+    // Saiu da tela (desconectou, ou engine recriada no hot reload): para a recaptura
+    Component.onDestruction: inspectorViewModel.active = false
 
     Connections {
         target: mirrorViewModel

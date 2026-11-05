@@ -49,7 +49,8 @@ def run(dev_mode: bool = False) -> int:
     settings_store = SettingsStore()
     settings_view_model = SettingsViewModel(settings_store)
     mirror_view_model = MirrorViewModel(settings_view_model)
-    inspector_view_model = InspectorViewModel()
+    inspector_view_model = InspectorViewModel(lambda: mirror_view_model.deviceSerial)
+    mirror_view_model.screenContentChanged.connect(inspector_view_model.notifyScreenChanged)
     app.aboutToQuit.connect(mirror_view_model.shutdown)
 
     def create_engine(initial_properties: dict | None = None) -> QQmlApplicationEngine:

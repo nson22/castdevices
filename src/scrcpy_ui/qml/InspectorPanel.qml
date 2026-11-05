@@ -9,14 +9,17 @@ Rectangle {
 
     color: Theme.surface
 
-    function refresh() {
-        inspectorViewModel.refresh(mirrorViewModel.deviceSerial)
-    }
-
     Connections {
         target: inspectorViewModel
         function onHierarchyChanged() {
             tree.expandRecursively()
+            // Recaptura automática: mantém selecionado o mesmo elemento, se ainda existir
+            const index = inspectorViewModel.selectedIndex()
+            if (index.valid) {
+                tree.selectionModel.setCurrentIndex(index, ItemSelectionModel.NoUpdate)
+            } else {
+                tree.selectionModel.clearCurrentIndex()
+            }
         }
     }
 
@@ -39,17 +42,12 @@ Rectangle {
                 elide: Text.ElideRight
                 Layout.fillWidth: true
             }
-            BusyIndicator {
-                running: inspectorViewModel.busy
-                visible: running
-                implicitWidth: 28
-                implicitHeight: 28
-            }
             IconButton {
+                objectName: "inspectorRefresh"
                 iconName: "refresh"
-                tip: "Capturar de novo"
-                enabled: !inspectorViewModel.busy
-                onClicked: panel.refresh()
+                busy: inspectorViewModel.busy
+                tip: busy ? "Capturando…" : "Capturar de novo (atualiza sozinho quando a tela muda)"
+                onClicked: inspectorViewModel.refresh()
             }
         }
 
