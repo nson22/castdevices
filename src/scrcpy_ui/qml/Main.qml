@@ -28,6 +28,13 @@ ApplicationWindow {
         id: stackView
         anchors.fill: parent
         initialItem: deviceGridComponent
+
+        // Engine recriada com uma sessão já ativa (hot reload no modo --dev)
+        Component.onCompleted: {
+            if (mirrorViewModel.isConnected) {
+                push(mirrorComponent, {}, StackView.Immediate)
+            }
+        }
     }
 
     Component {

@@ -63,6 +63,7 @@ class MirrorViewModel(QObject):
     audioDataReady = Signal(bytes)
     recordingChanged = Signal(bool)
     recordingSaved = Signal(str)
+    connectionChanged = Signal()
 
     def __init__(self, settings_view_model: SettingsViewModel, parent=None):
         super().__init__(parent)
@@ -71,6 +72,7 @@ class MirrorViewModel(QObject):
         self._control_sender: ControlSender | None = None
         self._mouse_mapper: MouseMapper | None = None
         self._video_sink: QVideoSink | None = None
+        self._sink_token = 0
         self._worker: threading.Thread | None = None
         self._last_frame: QVideoFrame | None = None
         self._screen_on = True
@@ -91,6 +93,24 @@ class MirrorViewModel(QObject):
     @Slot(QVideoSink)
     def attachVideoSink(self, sink: QVideoSink) -> None:
         self._video_sink = sink
+        self._sink_token += 1
+        token = self._sink_token
+        # O sink morre junto com o VideoOutput (tela saiu da pilha, ou engine
+        # recriada no hot reload). Só esquece se ainda for o atual: no reload a
+        # tela nova já registrou o dela antes de a antiga ser destruída.
+        sink.destroyed.connect(lambda *_: self._forget_video_sink(token))
+        # O scrcpy só manda frame quando a tela do device muda: sem isso, uma
+        # tela recriada fica preta até algo mexer no device.
+        if self._last_frame is not None:
+            sink.setVideoFrame(self._last_frame)
+
+    def _forget_video_sink(self, token: int) -> None:
+        if token == self._sink_token:
+            self._video_sink = None
+
+    @Property(bool, notify=connectionChanged)
+    def isConnected(self) -> bool:
+        return self._connection is not None
 
     @Slot(str)
     def connectToDevice(self, serial: str) -> None:
@@ -186,11 +206,14 @@ class MirrorViewModel(QObject):
     def _on_connected(self, name: str, width: int, height: int) -> None:
         if self._audio_active:
             self._audio_player.start()
+        self.connectionChanged.emit()
 
     @Slot()
     def _on_disconnected(self) -> None:
         self._audio_player.stop()
         self._audio_active = False
+        self._last_frame = None
+        self.connectionChanged.emit()
 
     def _drain_device_messages(self) -> None:
         connection = self._connection

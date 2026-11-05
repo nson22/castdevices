@@ -1,6 +1,6 @@
 """ViewModel da tela de listagem: busca os devices via adb, mantém o
 DeviceListModel atualizado e captura (em background) um screenshot de preview
-por device, publicando no DevicePreviewProvider.
+por device, publicando no PreviewImageStore.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from PySide6.QtGui import QImage
 
 from scrcpy_ui.adb import client
 from scrcpy_ui.models.device_list_model import DeviceListModel
-from scrcpy_ui.viewmodels.device_preview_provider import DevicePreviewProvider
+from scrcpy_ui.viewmodels.device_preview_provider import PreviewImageStore
 
 
 def _pil_to_qimage(pil_image) -> QImage:
@@ -26,10 +26,10 @@ class DeviceListViewModel(QObject):
     previewReady = Signal(str)
     singleDeviceFound = Signal(str)
 
-    def __init__(self, preview_provider: DevicePreviewProvider, parent=None):
+    def __init__(self, preview_store: PreviewImageStore, parent=None):
         super().__init__(parent)
         self._model = DeviceListModel(self)
-        self._preview_provider = preview_provider
+        self._preview_store = preview_store
         self.previewReady.connect(self._on_preview_ready)
 
     @Property(QObject, constant=True)
@@ -60,7 +60,7 @@ class DeviceListViewModel(QObject):
         except Exception:
             return
         qimage = _pil_to_qimage(pil_image)
-        self._preview_provider.set_image(device.serial, qimage)
+        self._preview_store.set_image(device.serial, qimage)
         self.previewReady.emit(device.serial)
 
     @Slot(str)

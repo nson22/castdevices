@@ -9,10 +9,11 @@ from PySide6.QtGui import QFont, QFontDatabase, QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
 
+from scrcpy_ui.hot_reload import QmlHotReloader
 from scrcpy_ui.paths import FONTS_DIR, QML_DIR
 from scrcpy_ui.storage.settings_store import SettingsStore
 from scrcpy_ui.viewmodels.device_list_view_model import DeviceListViewModel
-from scrcpy_ui.viewmodels.device_preview_provider import DevicePreviewProvider
+from scrcpy_ui.viewmodels.device_preview_provider import DevicePreviewProvider, PreviewImageStore
 from scrcpy_ui.viewmodels.mirror_view_model import MirrorViewModel
 from scrcpy_ui.viewmodels.settings_view_model import SettingsViewModel
 
@@ -34,28 +35,40 @@ def configure_style() -> None:
     QQuickStyle.setStyle("Material")
 
 
-def run() -> int:
+def run(dev_mode: bool = False) -> int:
     configure_style()
     app = QGuiApplication(sys.argv)
     app.setOrganizationName("scrcpy-ui")
     app.setApplicationName("scrcpy-ui")
     _load_fonts(app)
 
-    preview_provider = DevicePreviewProvider()
-    device_list_view_model = DeviceListViewModel(preview_provider)
+    preview_store = PreviewImageStore()
+    device_list_view_model = DeviceListViewModel(preview_store)
 
     settings_store = SettingsStore()
     settings_view_model = SettingsViewModel(settings_store)
     mirror_view_model = MirrorViewModel(settings_view_model)
 
-    engine = QQmlApplicationEngine()
-    engine.addImageProvider("devicepreviews", preview_provider)
-    engine.rootContext().setContextProperty("deviceListViewModel", device_list_view_model)
-    engine.rootContext().setContextProperty("mirrorViewModel", mirror_view_model)
-    engine.rootContext().setContextProperty("settingsViewModel", settings_view_model)
-    engine.load(str(QML_DIR / "Main.qml"))
+    def create_engine(initial_properties: dict | None = None) -> QQmlApplicationEngine:
+        engine = QQmlApplicationEngine()
+        # A engine toma posse do provider: um novo por engine (ver hot reload)
+        engine.addImageProvider("devicepreviews", DevicePreviewProvider(preview_store))
+        context = engine.rootContext()
+        context.setContextProperty("deviceListViewModel", device_list_view_model)
+        context.setContextProperty("mirrorViewModel", mirror_view_model)
+        context.setContextProperty("settingsViewModel", settings_view_model)
+        if initial_properties:
+            engine.setInitialProperties(initial_properties)
+        engine.load(str(QML_DIR / "Main.qml"))
+        return engine
 
-    if not engine.rootObjects():
-        return -1
+    if dev_mode:
+        reloader = QmlHotReloader(create_engine, QML_DIR)
+        if not reloader.start():
+            return -1
+    else:
+        engine = create_engine()
+        if not engine.rootObjects():
+            return -1
 
     return app.exec()

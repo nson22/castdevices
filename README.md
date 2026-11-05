@@ -56,6 +56,19 @@ uv sync
 uv run python -m scrcpy_ui
 ```
 
+### Modo desenvolvimento (hot reload)
+
+```sh
+uv run scrcpy-ui-dev
+```
+
+- Salvar um `.qml` recarrega a interface na hora, sem fechar o app — mantém posição/tamanho da
+  janela e, se houver um device espelhando, a sessão continua (a tela de espelhamento é reaberta).
+  A navegação volta pra tela inicial a cada reload.
+- Salvar um `.py` reinicia o app.
+- Se o QML tiver erro, o erro aparece no terminal (arquivo:linha) e a versão anterior continua
+  na tela.
+
 ## Gerando o executável
 
 ```sh
