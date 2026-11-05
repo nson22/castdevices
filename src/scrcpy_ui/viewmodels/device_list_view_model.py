@@ -25,20 +25,41 @@ def _pil_to_qimage(pil_image) -> QImage:
 class DeviceListViewModel(QObject):
     previewReady = Signal(str)
     singleDeviceFound = Signal(str)
+    loadingChanged = Signal()
+    _listed = Signal(object, object)  # entradas, devices
 
     def __init__(self, preview_store: PreviewImageStore, parent=None):
         super().__init__(parent)
         self._model = DeviceListModel(self)
         self._preview_store = preview_store
+        self._loading = False
         self.previewReady.connect(self._on_preview_ready)
+        self._listed.connect(self._on_listed)
 
     @Property(QObject, constant=True)
     def deviceListModel(self) -> DeviceListModel:
         return self._model
 
+    # Listando devices (a tela mostra o skeleton da grade enquanto isso)
+    @Property(bool, notify=loadingChanged)
+    def loading(self) -> bool:
+        return self._loading
+
     @Slot()
     def refresh(self) -> None:
-        devices = client.list_devices()
+        # Listar + ler o modelo de cada device faz chamadas adb (getprop):
+        # roda fora da thread da UI pra ela não travar
+        if self._loading:
+            return
+        self._loading = True
+        self.loadingChanged.emit()
+        threading.Thread(target=self._list, daemon=True).start()
+
+    def _list(self) -> None:
+        try:
+            devices = client.list_devices()
+        except Exception:
+            devices = []
         entries = []
         for device in devices:
             try:
@@ -46,7 +67,13 @@ class DeviceListViewModel(QObject):
             except Exception:
                 model_name = ""
             entries.append({"serial": device.serial, "deviceModel": model_name})
+        self._listed.emit(entries, devices)
+
+    @Slot(object, object)
+    def _on_listed(self, entries: list[dict[str, str]], devices: list) -> None:
         self._model.set_devices(entries)
+        self._loading = False
+        self.loadingChanged.emit()
 
         if len(devices) == 1:
             self.singleDeviceFound.emit(devices[0].serial)

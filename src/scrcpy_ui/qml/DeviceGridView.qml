@@ -6,6 +6,33 @@ import QtQuick.Dialogs
 Item {
     id: root
 
+    // Skeleton da grade enquanto lista os devices. Fica no mínimo 500 ms na
+    // tela pra não "piscar" quando a listagem é rápida.
+    property bool showSkeleton: deviceListViewModel.loading
+    // Quantos cards-esqueleto mostrar: a quantidade da última listagem
+    property int lastCount: 3
+
+    Timer {
+        id: skeletonHold
+        interval: 500
+        onTriggered: if (!deviceListViewModel.loading) root.showSkeleton = false
+    }
+
+    Connections {
+        target: deviceListViewModel
+        function onLoadingChanged() {
+            if (deviceListViewModel.loading) {
+                if (grid.count > 0) {
+                    root.lastCount = grid.count
+                }
+                root.showSkeleton = true
+                skeletonHold.restart()
+            } else if (!skeletonHold.running) {
+                root.showSkeleton = false
+            }
+        }
+    }
+
     Component.onCompleted: deviceListViewModel.refresh()
 
     Connections {
@@ -195,7 +222,8 @@ Item {
         AppBar {
             Layout.fillWidth: true
             title: "Dispositivos"
-            subtitle: grid.count === 0 ? "Nenhum conectado"
+            subtitle: root.showSkeleton ? "Procurando…"
+                    : grid.count === 0 ? "Nenhum conectado"
                     : grid.count === 1 ? "1 conectado"
                     : grid.count + " conectados"
 
@@ -236,7 +264,7 @@ Item {
                 cellHeight: Math.round(cellWidth * 1.25)
                 clip: true
                 model: deviceListViewModel.deviceListModel
-                visible: count > 0
+                visible: count > 0 && !root.showSkeleton
 
                 delegate: Item {
                     id: cell
@@ -268,7 +296,16 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 radius: Theme.radiusMd
-                                color: Theme.videoBackground
+                                // Sem preview ainda: fundo transparente pro preto não
+                                // aparecer através do pulso do skeleton
+                                color: cell.previewRevision === 0 ? "transparent" : Theme.videoBackground
+
+                                // Preview ainda não chegou (screenshot em andamento)
+                                Skeleton {
+                                    anchors.fill: parent
+                                    radius: parent.radius
+                                    visible: cell.previewRevision === 0
+                                }
 
                                 Image {
                                     anchors.fill: parent
@@ -338,11 +375,38 @@ Item {
                 }
             }
 
+            // Carregando: cards-esqueleto com a mesma geometria da grade
+            GridView {
+                id: skeletonGrid
+                objectName: "skeletonGrid"
+                width: grid.width
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.topMargin: grid.anchors.topMargin
+                cellWidth: grid.cellWidth
+                cellHeight: grid.cellHeight
+                clip: true
+                interactive: false
+                visible: root.showSkeleton
+                model: visible ? root.lastCount : 0
+
+                delegate: Item {
+                    width: skeletonGrid.cellWidth
+                    height: skeletonGrid.cellHeight
+
+                    SkeletonCard {
+                        anchors.fill: parent
+                        anchors.margins: Theme.spacingSm
+                    }
+                }
+            }
+
             ColumnLayout {
                 anchors.centerIn: parent
                 width: Math.min(parent.width - Theme.spacingXl * 2, 420)
                 spacing: Theme.spacingMd
-                visible: grid.count === 0
+                visible: grid.count === 0 && !root.showSkeleton
 
                 Text {
                     text: "phonelink_off"

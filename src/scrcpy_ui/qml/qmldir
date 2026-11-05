@@ -7,6 +7,8 @@ InstallProgressBar 1.0 InstallProgressBar.qml
 InspectorPanel 1.0 InspectorPanel.qml
 SettingsSection 1.0 SettingsSection.qml
 SettingRow 1.0 SettingRow.qml
+Skeleton 1.0 Skeleton.qml
+SkeletonCard 1.0 SkeletonCard.qml
 SkeletonText 1.0 SkeletonText.qml
 DeviceGridView 1.0 DeviceGridView.qml
 MirrorView 1.0 MirrorView.qml
