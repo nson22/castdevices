@@ -45,6 +45,18 @@ Para cumprir a LGPL:
 Se não conseguir obter algum desses códigos-fonte pelos links acima, abra uma
 [issue](https://github.com/nson22/scrcpy_ui/issues) que fornecemos uma cópia.
 
+### Módulos do Qt que não vão no pacote
+
+Alguns módulos do Qt são licenciados só sob GPL (ou licença comercial), sem a opção LGPL, e por
+isso não podem ser distribuídos junto de um app Apache-2.0. O SCRCPY UI não usa nenhum deles, e o
+build (`scrcpy-ui.spec`) os deixa de fora: Qt Quick Timeline, Qt Shader Tools, Qt Quick 3D,
+Qt Virtual Keyboard, Qt Charts, Qt Data Visualization, Qt Graphs, Qt Lottie, Qt HTTP Server,
+Qt Protobuf/gRPC, Qt MQTT, Qt CoAP, Qt OPC UA e Qt Wayland Compositor.
+
+Os pacotes dos releases `v0.0.3-alpha` e `v0.0.4-alpha` foram gerados antes dessa exclusão e
+ainda contêm as bibliotecas do Qt Quick Timeline e do Qt Shader Tools (não usadas pelo app). Os
+próximos releases já saem sem elas.
+
 ## scrcpy
 
 O SCRCPY UI é um cliente independente: ele **não é** um projeto oficial do scrcpy nem da
