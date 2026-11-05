@@ -29,6 +29,9 @@ via [PyAV](https://pyav.org/) e renderiza numa UI em QML.
 - **Instalação de APK**: na grade, instala em todos os devices listados ao mesmo tempo (barra de
   progresso verde por device); no espelhamento, só no device ativo (anel de progresso verde no
   botão). Se o app já existir, é atualizado mantendo os dados
+- **Desinstalação de apps**: painel lateral com os apps instalados pelo usuário (nome + pacote),
+  busca, seleção de um ou vários apps e confirmação com aviso. Por padrão apaga também os dados
+  do app; em Configurações dá pra manter os dados. Apps do sistema não aparecem na lista
 - **Estados de carregamento** com skeleton (estilo [shadcn/ui](https://ui.shadcn.com/docs/components/base/skeleton))
   na grade de devices e no inspetor
 - **Abrir automaticamente** o espelhamento quando há um único device conectado (opcional,
@@ -72,7 +75,7 @@ Segue o padrão **MVVM**:
 - `models/` — dados puros expostos ao QML (ex.: `DeviceListModel`, um `QAbstractListModel`)
 - `viewmodels/` — orquestram a lógica de negócio e expõem estado/comandos pro QML
   (`MirrorViewModel`, `DeviceListViewModel`, `SettingsViewModel`, `InspectorViewModel`,
-  `ApkInstallViewModel`)
+  `ApkInstallViewModel`, `AppManagerViewModel`)
 - `adb/`, `protocol/`, `video/`, `audio/`, `storage/` — camada de serviços (adbutils, protocolo
   do scrcpy, decode/encode de mídia, persistência)
 - `qml/` — as Views (QML puro, só faz bind nos ViewModels)
@@ -125,7 +128,7 @@ resources/
   fonts/            # Roboto + Material Symbols (ícones por nome, via ligadura)
   scrcpy-server/    # scrcpy-server.jar oficial (lado Android)
 src/scrcpy_ui/
-  adb/              # push do server, listagem de devices, instalação de APK
+  adb/              # push do server, listagem de devices, instalação de APK, apps instalados
   audio/            # decode (opus/aac/flac) e playback (QAudioSink)
   input/            # mapeamento mouse/teclado -> protocolo Android
   models/           # lista de devices, árvore de hierarquia da tela

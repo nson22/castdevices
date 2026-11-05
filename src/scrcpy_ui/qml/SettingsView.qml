@@ -147,6 +147,22 @@ Item {
                     }
 
                     SettingsSection {
+                        title: "Apps"
+
+                        SettingRow {
+                            label: "Manter os dados ao desinstalar"
+                            description: "Desligado (padrão): desinstalar apaga o app e todos os dados dele. Ligado: os dados e o cache ficam no device (útil para reinstalar sem perder nada)."
+                            showDivider: false
+
+                            Switch {
+                                objectName: "keepAppDataSwitch"
+                                checked: settingsViewModel.keepAppDataOnUninstall
+                                onToggled: settingsViewModel.keepAppDataOnUninstall = checked
+                            }
+                        }
+                    }
+
+                    SettingsSection {
                         title: "Vídeo"
                         description: "h265 e av1 dependem de encoder de hardware no device; se não houver, a conexão falha."
 

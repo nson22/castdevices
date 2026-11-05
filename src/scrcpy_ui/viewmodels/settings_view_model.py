@@ -21,6 +21,7 @@ _MAX_FPS_KEY = "max_fps"
 _AUTO_CONNECT_SINGLE_DEVICE_KEY = "auto_connect_single_device"
 _THEME_MODE_KEY = "theme_mode"
 _INSPECTOR_OPEN_BY_DEFAULT_KEY = "inspector_open_by_default"
+_KEEP_APP_DATA_ON_UNINSTALL_KEY = "keep_app_data_on_uninstall"
 
 AUDIO_CODECS = ("opus", "aac", "flac", "raw")
 VIDEO_CODECS = ("h264", "h265", "av1")
@@ -50,6 +51,7 @@ class SettingsViewModel(QObject):
     maxFpsChanged = Signal(int)
     autoConnectSingleDeviceChanged = Signal(bool)
     inspectorOpenByDefaultChanged = Signal(bool)
+    keepAppDataOnUninstallChanged = Signal(bool)
     themeModeChanged = Signal(str)
 
     def __init__(self, store: SettingsStore, parent=None):
@@ -75,6 +77,10 @@ class SettingsViewModel(QObject):
         )
         self._inspector_open_by_default = (
             self._store.get(_INSPECTOR_OPEN_BY_DEFAULT_KEY, "1") == "1"  # padrão ligado
+        )
+        # Padrão desligado: desinstalar apaga também os dados do app
+        self._keep_app_data_on_uninstall = (
+            self._store.get(_KEEP_APP_DATA_ON_UNINSTALL_KEY, "0") == "1"
         )
         self._theme_mode = self._store.get(_THEME_MODE_KEY, "system")
         if self._theme_mode not in THEME_MODES:
@@ -226,6 +232,19 @@ class SettingsViewModel(QObject):
         self._inspector_open_by_default = value
         self._store.set(_INSPECTOR_OPEN_BY_DEFAULT_KEY, "1" if value else "0")
         self.inspectorOpenByDefaultChanged.emit(value)
+
+    # Desinstalar app mantendo dados e cache no device (`pm uninstall -k`)
+    @Property(bool, notify=keepAppDataOnUninstallChanged)
+    def keepAppDataOnUninstall(self) -> bool:
+        return self._keep_app_data_on_uninstall
+
+    @keepAppDataOnUninstall.setter
+    def keepAppDataOnUninstall(self, value: bool) -> None:
+        if value == self._keep_app_data_on_uninstall:
+            return
+        self._keep_app_data_on_uninstall = value
+        self._store.set(_KEEP_APP_DATA_ON_UNINSTALL_KEY, "1" if value else "0")
+        self.keepAppDataOnUninstallChanged.emit(value)
 
     @Property(str, notify=themeModeChanged)
     def themeMode(self) -> str:

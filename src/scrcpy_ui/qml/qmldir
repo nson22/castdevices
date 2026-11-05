@@ -5,6 +5,7 @@ IconButton 1.0 IconButton.qml
 ApkInstallButton 1.0 ApkInstallButton.qml
 InstallProgressBar 1.0 InstallProgressBar.qml
 InspectorPanel 1.0 InspectorPanel.qml
+AppsPanel 1.0 AppsPanel.qml
 SettingsSection 1.0 SettingsSection.qml
 SettingRow 1.0 SettingRow.qml
 Skeleton 1.0 Skeleton.qml

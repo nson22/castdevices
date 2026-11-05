@@ -63,6 +63,15 @@ Item {
                                 : "Instalar APK neste device"
                 onClicked: if (!installing) mirrorApkDialog.open()
             }
+            // Desinstalar apps: abre o painel lateral com a lista de apps
+            IconButton {
+                id: appsToggle
+                objectName: "appsToggle"
+                iconName: "delete"
+                tip: checked ? "Fechar lista de apps" : "Desinstalar apps deste device"
+                checkable: true
+                onToggled: root.setAppsOpen(checked)
+            }
 
             AppBarSeparator {}
 
@@ -276,18 +285,41 @@ Item {
                 SplitView.preferredWidth: 380
                 SplitView.minimumWidth: 280
             }
+
+            AppsPanel {
+                id: appsPanel
+                objectName: "appsPanel"
+                visible: appsToggle.checked
+                SplitView.preferredWidth: 380
+                SplitView.minimumWidth: 300
+            }
         }
     }
 
+    // Os dois painéis laterais (hierarquia e apps) ocupam o mesmo lugar: abrir
+    // um fecha o outro. Abrem dividindo a área meio a meio com o vídeo
+    // (binding: acompanha o tamanho da janela até o usuário arrastar o divisor).
     function setInspectorOpen(open) {
+        if (open && appsToggle.checked) {
+            appsToggle.checked = false
+        }
         inspectorToggle.checked = open
         if (open) {
-            // Abre dividindo a área meio a meio com o vídeo (binding: acompanha o
-            // tamanho da janela até o usuário arrastar o divisor)
             inspectorPanel.SplitView.preferredWidth = Qt.binding(() => split.width / 2)
         }
         // Ativo: captura agora e recaptura quando a tela do device mudar
         inspectorViewModel.active = open
+    }
+
+    function setAppsOpen(open) {
+        if (open && inspectorToggle.checked) {
+            root.setInspectorOpen(false)
+        }
+        appsToggle.checked = open
+        if (open) {
+            appsPanel.SplitView.preferredWidth = Qt.binding(() => split.width / 2)
+            appManagerViewModel.refresh()
+        }
     }
 
     // Configurações -> "Abrir a hierarquia da tela junto com o espelhamento"
@@ -309,6 +341,13 @@ Item {
 
     Connections {
         target: apkInstallViewModel
+        function onFinished(message, ok) {
+            toast.show(message)
+        }
+    }
+
+    Connections {
+        target: appManagerViewModel
         function onFinished(message, ok) {
             toast.show(message)
         }
