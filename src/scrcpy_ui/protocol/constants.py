@@ -47,6 +47,9 @@ PACKET_HEADER_SIZE = 12
 PACKET_FLAG_CONFIG = 1 << 62
 PACKET_FLAG_KEY_FRAME = 1 << 61
 PACKET_PTS_MASK = (1 << 61) - 1
+# Bit 63 (MSB do 1º byte do header): pacote de sessão de vídeo (só header,
+# sem payload) -- enviado no início e a cada mudança de tamanho (rotação)
+SESSION_PACKET_MSB = 0x80
 
 POINTER_ID_MOUSE = 0xFFFFFFFFFFFFFFFF
 

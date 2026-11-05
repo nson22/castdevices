@@ -45,7 +45,7 @@ from scrcpy_ui.protocol.control_stream import (
     serialize_simple,
     serialize_touch_event,
 )
-from scrcpy_ui.protocol.video_stream import iter_video_packets
+from scrcpy_ui.protocol.video_stream import VideoSession, iter_video_packets
 from scrcpy_ui.video.change_detector import ScreenChangeDetector
 from scrcpy_ui.video.decoder import VideoDecoder
 from scrcpy_ui.video.frame_bridge import av_frame_to_qvideoframe
@@ -187,6 +187,15 @@ class MirrorViewModel(QObject):
         change_detector = ScreenChangeDetector()
         try:
             for packet in iter_video_packets(connection.video_sock, video_codec):
+                if isinstance(packet, VideoSession):
+                    # Device girou (ou dobrou): novo tamanho de vídeo. Os toques
+                    # precisam informar o tamanho atual, senão o server os ignora.
+                    if self._mouse_mapper is not None:
+                        self._mouse_mapper.set_device_size(packet.width, packet.height)
+                    self._session_width = packet.width
+                    self._session_height = packet.height
+                    change_detector.reset()
+                    continue
                 if self._recorder is not None:
                     self._recorder.write_video(packet)
                 for frame in decoder.decode(packet):

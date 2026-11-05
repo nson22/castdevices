@@ -21,6 +21,12 @@ class MouseMapper:
         self.device_height = device_height
         self.content_rect = ContentRect(0.0, 0.0, float(device_width), float(device_height))
 
+    def set_device_size(self, device_width: int, device_height: int) -> None:
+        """Nova sessão de vídeo (ex.: rotação). A área do vídeo na tela
+        (content_rect) é atualizada à parte, pelo QML."""
+        self.device_width = device_width
+        self.device_height = device_height
+
     def set_content_rect(self, x: float, y: float, width: float, height: float) -> None:
         self.content_rect = ContentRect(x, y, width, height)
 
