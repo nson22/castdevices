@@ -293,12 +293,12 @@ Item {
                         }
                         SettingRow {
                             label: "Código-fonte"
-                            description: "github.com/nson22/scrcpy_ui"
+                            description: "github.com/nson22/castdevices"
 
                             Button {
                                 text: "Abrir"
                                 flat: true
-                                onClicked: Qt.openUrlExternally("https://github.com/nson22/scrcpy_ui")
+                                onClicked: Qt.openUrlExternally("https://github.com/nson22/castdevices")
                             }
                         }
                     }

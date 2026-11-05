@@ -40,10 +40,10 @@ Para cumprir a LGPL:
   - FFmpeg 9.0: https://ffmpeg.org/download.html — o build usado pelo PyAV é feito pelos
     scripts de https://github.com/PyAV-Org/pyav-ffmpeg
 - **Código-fonte do CastDevices**, para refazer o pacote com bibliotecas modificadas:
-  https://github.com/nson22/scrcpy_ui (instruções de build no README).
+  https://github.com/nson22/castdevices (instruções de build no README).
 
 Se não conseguir obter algum desses códigos-fonte pelos links acima, abra uma
-[issue](https://github.com/nson22/scrcpy_ui/issues) que fornecemos uma cópia.
+[issue](https://github.com/nson22/castdevices/issues) que fornecemos uma cópia.
 
 ### Módulos do Qt que não vão no pacote
 

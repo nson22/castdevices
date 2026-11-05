@@ -6,7 +6,7 @@
 
 <p align="center">
   Espelhe e controle devices Android pelo computador — Windows, macOS e Linux.<br>
-  <a href="https://github.com/nson22/scrcpy_ui/releases/latest"><b>Baixar a última versão</b></a>
+  <a href="https://github.com/nson22/castdevices/releases/latest"><b>Baixar a última versão</b></a>
 </p>
 
 Cliente desktop multiplataforma (Python + [PySide6](https://pypi.org/project/PySide6/)/QML) que
@@ -91,7 +91,7 @@ Segue o padrão **MVVM**:
 
 ## Download
 
-Na [página de releases](https://github.com/nson22/scrcpy_ui/releases/latest). Não precisa instalar
+Na [página de releases](https://github.com/nson22/castdevices/releases/latest). Não precisa instalar
 Python nem o Android platform-tools: o **adb oficial já vem junto**, na mesma versão usada pelo
 scrcpy (platform-tools 37.0.0). O device precisa estar com a **depuração USB** ativada.
 
