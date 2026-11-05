@@ -42,7 +42,9 @@ QtObject {
     readonly property int fontBody: 14
     readonly property int fontTitle: 16
     readonly property int fontHeadline: 22
-    readonly property string iconFont: "Material Icons"
+    // Material Symbols (mesmo catálogo do fonts.google.com/icons) -- os ícones
+    // são escritos pelo nome, via ligadura: text: "tv_off"
+    readonly property string iconFont: "Material Symbols Outlined"
 
     // Layout
     readonly property int appBarHeight: 52

@@ -114,6 +114,7 @@ Item {
                                         anchors.centerIn: parent
                                         text: "play_arrow"
                                         font.family: Theme.iconFont
+                                        font.variableAxes: ({ "FILL": 1 })
                                         font.pixelSize: 32
                                         color: Theme.accentText
                                     }

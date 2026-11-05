@@ -18,27 +18,44 @@ Item {
         AppBar {
             Layout.fillWidth: true
 
-            leading: [
-                IconButton {
-                    iconName: "arrow_back"
-                    tip: "Voltar (Android)"
-                    onClicked: mirrorViewModel.sendBack()
-                },
-                IconButton {
-                    iconName: "home"
-                    tip: "Home"
-                    onClicked: mirrorViewModel.sendHome()
-                },
-                IconButton {
-                    iconName: "crop_square"
-                    tip: "Apps recentes"
-                    onClicked: mirrorViewModel.sendRecents()
-                }
-            ]
+            // Ações no device
+            IconButton {
+                iconName: "mobile_rotate"
+                tip: "Girar tela"
+                onClicked: mirrorViewModel.rotateDevice()
+            }
+            IconButton {
+                iconName: mirrorViewModel.screenOn ? "tv_off" : "tv"
+                tip: mirrorViewModel.screenOn ? "Desligar tela" : "Ligar tela"
+                onClicked: mirrorViewModel.toggleScreenPower()
+            }
+            IconButton {
+                iconName: "expand_circle_down"
+                tip: "Expandir notificações"
+                onClicked: mirrorViewModel.expandNotifications()
+            }
 
+            AppBarSeparator {}
+
+            // Clipboard
+            IconButton {
+                iconName: "content_copy"
+                tip: "Copiar clipboard do device"
+                onClicked: mirrorViewModel.copyClipboardFromDevice()
+            }
+            IconButton {
+                iconName: "content_paste"
+                tip: "Colar clipboard no device"
+                onClicked: mirrorViewModel.pasteClipboardToDevice()
+            }
+
+            AppBarSeparator {}
+
+            // Captura
             IconButton {
                 iconName: mirrorViewModel.isRecording ? "stop" : "fiber_manual_record"
                 iconColor: mirrorViewModel.isRecording ? Theme.danger : Theme.textPrimary
+                filled: true
                 tip: mirrorViewModel.isRecording ? "Parar gravação" : "Gravar tela"
                 onClicked: mirrorViewModel.toggleRecording()
             }
@@ -47,39 +64,9 @@ Item {
                 tip: "Screenshot"
                 onClicked: mirrorViewModel.takeScreenshot()
             }
-            IconButton {
-                id: moreButton
-                iconName: "more_vert"
-                tip: "Mais ações"
-                onClicked: moreMenu.open()
 
-                Menu {
-                    id: moreMenu
-                    y: moreButton.height
+            AppBarSeparator {}
 
-                    MenuItem {
-                        text: "Girar tela"
-                        onTriggered: mirrorViewModel.rotateDevice()
-                    }
-                    MenuItem {
-                        text: mirrorViewModel.screenOn ? "Desligar tela" : "Ligar tela"
-                        onTriggered: mirrorViewModel.toggleScreenPower()
-                    }
-                    MenuItem {
-                        text: "Expandir notificações"
-                        onTriggered: mirrorViewModel.expandNotifications()
-                    }
-                    MenuSeparator {}
-                    MenuItem {
-                        text: "Copiar clipboard do device"
-                        onTriggered: mirrorViewModel.copyClipboardFromDevice()
-                    }
-                    MenuItem {
-                        text: "Colar clipboard no device"
-                        onTriggered: mirrorViewModel.pasteClipboardToDevice()
-                    }
-                }
-            }
             IconButton {
                 iconName: "settings"
                 tip: "Configurações"

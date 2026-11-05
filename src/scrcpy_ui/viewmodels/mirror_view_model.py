@@ -26,7 +26,6 @@ from scrcpy_ui.input.mouse_mapper import MouseMapper
 from scrcpy_ui.protocol.audio_stream import iter_audio_packets
 from scrcpy_ui.protocol.connection import ScrcpyConnection
 from scrcpy_ui.protocol.constants import (
-    ANDROID_KEYCODE_APP_SWITCH,
     ANDROID_KEYCODE_HOME,
     ControlMsgType,
     CopyKey,
@@ -369,20 +368,6 @@ class MirrorViewModel(QObject):
         try:
             self._control_sender.send(serialize_key_event(KeyEventAction.DOWN, ANDROID_KEYCODE_HOME))
             self._control_sender.send(serialize_key_event(KeyEventAction.UP, ANDROID_KEYCODE_HOME))
-        except OSError:
-            pass
-
-    @Slot()
-    def sendRecents(self) -> None:
-        if self._control_sender is None:
-            return
-        try:
-            self._control_sender.send(
-                serialize_key_event(KeyEventAction.DOWN, ANDROID_KEYCODE_APP_SWITCH)
-            )
-            self._control_sender.send(
-                serialize_key_event(KeyEventAction.UP, ANDROID_KEYCODE_APP_SWITCH)
-            )
         except OSError:
             pass
 

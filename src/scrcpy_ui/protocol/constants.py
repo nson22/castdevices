@@ -55,7 +55,6 @@ POINTER_ID_MOUSE = 0xFFFFFFFFFFFFFFFF
 # padrão, já que a maioria dos apps Android não reage a um botão secundário
 # num evento de toque).
 ANDROID_KEYCODE_HOME = 3
-ANDROID_KEYCODE_APP_SWITCH = 187
 
 
 class ControlMsgType(IntEnum):

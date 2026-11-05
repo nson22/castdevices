@@ -19,7 +19,7 @@ from scrcpy_ui.viewmodels.settings_view_model import SettingsViewModel
 
 def _load_fonts(app: QGuiApplication) -> None:
     roboto_id = QFontDatabase.addApplicationFont(str(FONTS_DIR / "Roboto.ttf"))
-    QFontDatabase.addApplicationFont(str(FONTS_DIR / "MaterialIcons-Regular.ttf"))
+    QFontDatabase.addApplicationFont(str(FONTS_DIR / "MaterialSymbolsOutlined.ttf"))
 
     roboto_families = QFontDatabase.applicationFontFamilies(roboto_id)
     if roboto_families:

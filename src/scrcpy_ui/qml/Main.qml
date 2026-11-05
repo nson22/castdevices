@@ -6,7 +6,7 @@ ApplicationWindow {
     id: window
     width: 1100
     height: 760
-    minimumWidth: 360
+    minimumWidth: 460
     minimumHeight: 480
     visible: true
     title: "scrcpy-ui"

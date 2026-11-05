@@ -68,7 +68,7 @@ A saída fica em `dist/scrcpy-ui/` (o `scrcpy-ui.exe` precisa das DLLs da mesma 
 
 ```
 resources/
-  fonts/            # Roboto + Material Icons (ligadura de texto pros ícones)
+  fonts/            # Roboto + Material Symbols (ícones por nome, via ligadura)
   scrcpy-server/    # scrcpy-server.jar oficial (lado Android)
 src/scrcpy_ui/
   adb/              # push do server, listagem de devices

@@ -7,6 +7,8 @@ ToolButton {
     property string iconName
     property string tip
     property color iconColor: Theme.textPrimary
+    // Material Symbols é variável: FILL=1 dá a versão preenchida do ícone
+    property bool filled: false
 
     implicitWidth: 40
     implicitHeight: 40
@@ -16,6 +18,7 @@ ToolButton {
         text: control.iconName
         font.family: Theme.iconFont
         font.pixelSize: 22
+        font.variableAxes: ({ "FILL": control.filled ? 1 : 0 })
         color: control.enabled ? control.iconColor : Theme.textSecondary
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
