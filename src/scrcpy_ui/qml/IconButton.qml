@@ -14,10 +14,13 @@ ToolButton {
     implicitHeight: 40
     padding: 0
 
+    // Tamanho do ícone: 22 na barra superior; menor em botões "small"
+    property int iconSize: 22
+
     contentItem: Text {
         text: control.iconName
         font.family: Theme.iconFont
-        font.pixelSize: 22
+        font.pixelSize: control.iconSize
         font.variableAxes: ({ "FILL": control.filled ? 1 : 0 })
         color: !control.enabled ? Theme.textSecondary
              : control.checked ? Theme.accent

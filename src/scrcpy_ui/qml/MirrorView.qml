@@ -88,14 +88,7 @@ Item {
                 iconName: "account_tree"
                 tip: checked ? "Ocultar hierarquia da tela" : "Mostrar hierarquia da tela"
                 checkable: true
-                onToggled: {
-                    if (checked) {
-                        // Abre dividindo a área meio a meio com o vídeo
-                        inspectorPanel.SplitView.preferredWidth = split.width / 2
-                    }
-                    // Ativo: captura agora e recaptura quando a tela do device mudar
-                    inspectorViewModel.active = checked
-                }
+                onToggled: root.setInspectorOpen(checked)
             }
             IconButton {
                 iconName: "settings"
@@ -278,6 +271,7 @@ Item {
 
             InspectorPanel {
                 id: inspectorPanel
+                objectName: "inspectorPanel"
                 visible: inspectorToggle.checked
                 SplitView.preferredWidth: 380
                 SplitView.minimumWidth: 280
@@ -285,8 +279,26 @@ Item {
         }
     }
 
-    // Saiu da tela (desconectou, ou engine recriada no hot reload): para a recaptura
-    Component.onDestruction: inspectorViewModel.active = false
+    function setInspectorOpen(open) {
+        inspectorToggle.checked = open
+        if (open) {
+            // Abre dividindo a área meio a meio com o vídeo (binding: acompanha o
+            // tamanho da janela até o usuário arrastar o divisor)
+            inspectorPanel.SplitView.preferredWidth = Qt.binding(() => split.width / 2)
+        }
+        // Ativo: captura agora e recaptura quando a tela do device mudar
+        inspectorViewModel.active = open
+    }
+
+    // Configurações -> "Abrir a hierarquia da tela junto com o espelhamento"
+    // (aplica nos dois sentidos: também deixa a recaptura desligada se a opção
+    // estiver desligada, ex. depois de um hot reload)
+    Component.onCompleted: root.setInspectorOpen(settingsViewModel.inspectorOpenByDefault)
+
+    // Saiu da pilha (desconectou): para a recaptura. Não usa onDestruction: no
+    // hot reload a tela nova é criada antes da antiga ser destruída, e isso
+    // desligaria o painel que a tela nova acabou de abrir.
+    StackView.onRemoved: inspectorViewModel.active = false
 
     FileDialog {
         id: mirrorApkDialog

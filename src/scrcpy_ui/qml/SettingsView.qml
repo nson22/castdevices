@@ -131,6 +131,22 @@ Item {
                     }
 
                     SettingsSection {
+                        title: "Hierarquia da tela"
+
+                        SettingRow {
+                            label: "Abrir junto com o espelhamento"
+                            description: "Mostra a árvore de elementos da tela ao lado do device assim que ele é aberto. Dá pra ocultar a qualquer momento pelo botão na barra superior."
+                            showDivider: false
+
+                            Switch {
+                                objectName: "inspectorOpenByDefaultSwitch"
+                                checked: settingsViewModel.inspectorOpenByDefault
+                                onToggled: settingsViewModel.inspectorOpenByDefault = checked
+                            }
+                        }
+                    }
+
+                    SettingsSection {
                         title: "Vídeo"
                         description: "h265 e av1 dependem de encoder de hardware no device; se não houver, a conexão falha."
 

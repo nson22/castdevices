@@ -13,6 +13,7 @@ import threading
 from typing import Callable
 
 from PySide6.QtCore import Property, QModelIndex, QObject, QRectF, QTimer, Signal, Slot
+from PySide6.QtGui import QGuiApplication
 
 from scrcpy_ui.adb import client
 from scrcpy_ui.models.ui_hierarchy_model import UiHierarchyModel, UiNode, parse_hierarchy
@@ -221,6 +222,19 @@ class InspectorViewModel(QObject):
         if node is None:
             return QModelIndex()
         return self._model.createIndex(node.row, 0, node)
+
+    @Slot(str, str, result=str)
+    def copyValueFor(self, name: str, value: str) -> str:
+        """Valor que o botão de copiar de uma propriedade vai copiar (o QML usa
+        no tooltip)."""
+        if name == "resource-id":
+            # "com.app:id/botao_ok" -> "botao_ok"
+            return value.rsplit("/", 1)[-1]
+        return value
+
+    @Slot(str, str)
+    def copyDetail(self, name: str, value: str) -> None:
+        QGuiApplication.clipboard().setText(self.copyValueFor(name, value))
 
     @Slot(QModelIndex)
     def selectIndex(self, index: QModelIndex) -> None:

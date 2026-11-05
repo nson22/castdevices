@@ -187,6 +187,7 @@ Rectangle {
                     model: inspectorViewModel.selectedDetails
 
                     RowLayout {
+                        id: detailRow
                         required property var modelData
                         Layout.fillWidth: true
                         spacing: Theme.spacingMd
@@ -209,6 +210,36 @@ Rectangle {
                             selectedTextColor: Theme.accentText
                             font.pixelSize: Theme.fontCaption
                             Layout.fillWidth: true
+                        }
+
+                        // Copiar o valor (no resource-id, só o nome depois da "/")
+                        IconButton {
+                            id: copyButton
+                            objectName: "copy_" + detailRow.modelData.name
+                            property bool copied: false
+                            readonly property string copyValue:
+                                inspectorViewModel.copyValueFor(detailRow.modelData.name, detailRow.modelData.value)
+
+                            implicitWidth: 24
+                            implicitHeight: 24
+                            iconSize: 16
+                            iconName: copied ? "check" : "content_copy"
+                            iconColor: copied ? Theme.success : Theme.textSecondary
+                            tip: copied ? "Copiado" : "Copiar \"" + copyValue + "\""
+                            Layout.alignment: Qt.AlignTop
+                            Layout.topMargin: -4
+
+                            onClicked: {
+                                inspectorViewModel.copyDetail(detailRow.modelData.name, detailRow.modelData.value)
+                                copied = true
+                                copiedTimer.restart()
+                            }
+
+                            Timer {
+                                id: copiedTimer
+                                interval: 1200
+                                onTriggered: copyButton.copied = false
+                            }
                         }
                     }
                 }
