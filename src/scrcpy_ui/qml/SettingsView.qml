@@ -9,6 +9,40 @@ Item {
     // Largura padrão dos controles da coluna direita (ComboBox, SpinBox...)
     readonly property int controlWidth: 220
 
+    // "Tecla" com ícone + nome do comando do mouse (seção de ajuda)
+    component MouseChip: Rectangle {
+        id: chip
+        property string iconName: "mouse"
+        property string text
+
+        // Largura mínima igual pra todos: alinham em coluna e, em janela
+        // estreita, todos descem pra baixo do texto (ver SettingRow.stacked)
+        implicitWidth: Math.max(150, chipRow.implicitWidth + Theme.spacingMd * 2)
+        implicitHeight: 30
+        radius: Theme.radiusSm
+        color: Theme.surfaceAlt
+        border.color: Theme.border
+
+        RowLayout {
+            id: chipRow
+            anchors.centerIn: parent
+            spacing: Theme.spacingXs
+
+            Text {
+                text: chip.iconName
+                font.family: Theme.iconFont
+                font.pixelSize: 18
+                color: Theme.textSecondary
+            }
+            Label {
+                text: chip.text
+                color: Theme.textPrimary
+                font.pixelSize: Theme.fontCaption
+                font.weight: Font.DemiBold
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -204,6 +238,37 @@ Item {
                                 flat: true
                                 onClicked: recordingFolderDialog.open()
                             }
+                        }
+                    }
+
+                    SettingsSection {
+                        title: "Comandos do mouse"
+                        description: "Como o mouse controla o device na tela de espelhamento."
+
+                        SettingRow {
+                            label: "Tocar e arrastar"
+                            description: "Um clique é um toque na tela. Segure e arraste para deslizar (swipe), rolar listas ou arrastar itens; segurar parado faz um toque longo."
+                            showDivider: false
+
+                            MouseChip { text: "Clique esquerdo" }
+                        }
+                        SettingRow {
+                            label: "Voltar"
+                            description: "Mesmo que o botão Voltar do Android."
+
+                            MouseChip { text: "Clique direito" }
+                        }
+                        SettingRow {
+                            label: "Tela inicial (Home)"
+                            description: "Mesmo que o botão Home do Android."
+
+                            MouseChip { text: "Clique na roda" }
+                        }
+                        SettingRow {
+                            label: "Rolar"
+                            description: "Rola o conteúdo sob o cursor. Roda horizontal ou touchpad rolam para os lados."
+
+                            MouseChip { iconName: "swap_vert"; text: "Roda do mouse" }
                         }
                     }
                 }
