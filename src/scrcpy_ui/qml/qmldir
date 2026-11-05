@@ -2,6 +2,8 @@ singleton Theme 1.0 Theme.qml
 AppBar 1.0 AppBar.qml
 AppBarSeparator 1.0 AppBarSeparator.qml
 IconButton 1.0 IconButton.qml
+ApkInstallButton 1.0 ApkInstallButton.qml
+InstallProgressBar 1.0 InstallProgressBar.qml
 InspectorPanel 1.0 InspectorPanel.qml
 SettingsSection 1.0 SettingsSection.qml
 SettingRow 1.0 SettingRow.qml

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtMultimedia
+import QtQuick.Dialogs
 
 Item {
     id: root
@@ -47,6 +48,20 @@ Item {
                 iconName: "content_paste"
                 tip: "Colar clipboard no device"
                 onClicked: mirrorViewModel.pasteClipboardToDevice()
+            }
+
+            AppBarSeparator {}
+
+            // APK: só no device ativo; o anel verde mostra o progresso
+            ApkInstallButton {
+                id: apkButton
+                objectName: "mirrorApkButton"
+                readonly property var install: apkInstallViewModel.installs[mirrorViewModel.deviceSerial]
+                installing: install !== undefined && (install.phase === "uploading" || install.phase === "installing")
+                progress: install !== undefined ? install.progress : 0
+                tip: installing ? "Instalando " + apkInstallViewModel.apkName + "… " + Math.round(progress * 100) + "%"
+                                : "Instalar APK neste device"
+                onClicked: if (!installing) mirrorApkDialog.open()
             }
 
             AppBarSeparator {}
@@ -272,6 +287,20 @@ Item {
 
     // Saiu da tela (desconectou, ou engine recriada no hot reload): para a recaptura
     Component.onDestruction: inspectorViewModel.active = false
+
+    FileDialog {
+        id: mirrorApkDialog
+        title: "Escolher APK para instalar neste device"
+        nameFilters: ["Pacotes Android (*.apk)"]
+        onAccepted: apkInstallViewModel.installFileOn(selectedFile, mirrorViewModel.deviceSerial)
+    }
+
+    Connections {
+        target: apkInstallViewModel
+        function onFinished(message, ok) {
+            toast.show(message)
+        }
+    }
 
     Connections {
         target: mirrorViewModel

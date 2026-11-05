@@ -21,6 +21,8 @@ QtObject {
     // (sem prefixo "on": em QML "onXxx" é reservado pra handler de sinal)
     readonly property color accentText: dark ? "#0b1220" : "#ffffff"
     readonly property color danger: dark ? "#ff6b6b" : "#d12f2f"
+    // Progresso/conclusão (ex.: instalação de APK)
+    readonly property color success: dark ? "#4ade80" : "#16a34a"
     readonly property color videoBackground: "#000000"
     readonly property color scrim: "#d9101318"
     readonly property color scrimText: "#f4f5f7"

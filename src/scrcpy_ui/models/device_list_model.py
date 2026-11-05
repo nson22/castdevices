@@ -55,6 +55,9 @@ class DeviceListModel(QAbstractListModel):
         ]
         self.endResetModel()
 
+    def serials(self) -> list[str]:
+        return [device["serial"] for device in self._devices]
+
     def bump_preview_revision(self, serial: str) -> None:
         for row, device in enumerate(self._devices):
             if device["serial"] == serial:

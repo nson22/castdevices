@@ -14,6 +14,7 @@ from scrcpy_ui.paths import FONTS_DIR, QML_DIR
 from scrcpy_ui.storage.settings_store import SettingsStore
 from scrcpy_ui.viewmodels.device_list_view_model import DeviceListViewModel
 from scrcpy_ui.viewmodels.device_preview_provider import DevicePreviewProvider, PreviewImageStore
+from scrcpy_ui.viewmodels.apk_install_view_model import ApkInstallViewModel
 from scrcpy_ui.viewmodels.inspector_view_model import InspectorViewModel
 from scrcpy_ui.viewmodels.mirror_view_model import MirrorViewModel
 from scrcpy_ui.viewmodels.settings_view_model import SettingsViewModel
@@ -51,6 +52,7 @@ def run(dev_mode: bool = False) -> int:
     mirror_view_model = MirrorViewModel(settings_view_model)
     inspector_view_model = InspectorViewModel(lambda: mirror_view_model.deviceSerial)
     mirror_view_model.screenContentChanged.connect(inspector_view_model.notifyScreenChanged)
+    apk_install_view_model = ApkInstallViewModel(device_list_view_model.deviceListModel.serials)
     app.aboutToQuit.connect(mirror_view_model.shutdown)
 
     def create_engine(initial_properties: dict | None = None) -> QQmlApplicationEngine:
@@ -62,6 +64,7 @@ def run(dev_mode: bool = False) -> int:
         context.setContextProperty("mirrorViewModel", mirror_view_model)
         context.setContextProperty("settingsViewModel", settings_view_model)
         context.setContextProperty("inspectorViewModel", inspector_view_model)
+        context.setContextProperty("apkInstallViewModel", apk_install_view_model)
         if initial_properties:
             engine.setInitialProperties(initial_properties)
         engine.load(str(QML_DIR / "Main.qml"))

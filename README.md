@@ -21,6 +21,8 @@ via [PyAV](https://pyav.org/) e renderiza numa UI em QML.
 - **Inspetor de hierarquia**: árvore dos elementos da tela (`uiautomator dump`) ao lado do
   espelhamento, com as propriedades do elemento selecionado e o destaque dele sobre o vídeo
 - **Grade de devices** com preview real (screenshot) e botão de play
+- **Instalação de APK**: na grade, instala em todos os devices listados ao mesmo tempo (barra de
+  progresso por device); no espelhamento, só no device ativo (anel de progresso no botão)
 - Configurações persistidas localmente (SQLite): pasta de screenshots/gravações, codecs,
   stay-awake, show-touches, etc.
 

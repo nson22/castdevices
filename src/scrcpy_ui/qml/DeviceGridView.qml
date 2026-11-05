@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 Item {
     id: root
@@ -16,6 +17,177 @@ Item {
         }
     }
 
+    Connections {
+        target: apkInstallViewModel
+        function onFinished(message, ok) {
+            toast.show(message, ok)
+        }
+    }
+
+    // 1) escolhe a APK -> 2) confirma -> instala em todos os devices listados
+    FileDialog {
+        id: apkFileDialog
+        title: "Escolher APK"
+        nameFilters: ["Pacotes Android (*.apk)"]
+        onAccepted: {
+            apkInstallViewModel.selectApk(selectedFile)
+            if (apkInstallViewModel.apkName.length > 0) {
+                installDialog.open()
+            }
+        }
+    }
+
+    Dialog {
+        id: installDialog
+        objectName: "installDialog"
+        anchors.centerIn: parent
+        width: Math.min(root.width - Theme.spacingXl * 2, 440)
+        modal: true
+        padding: Theme.spacingXl
+        topPadding: Theme.spacingXl
+
+        background: Rectangle {
+            radius: Theme.radiusLg
+            color: Theme.surface
+            border.color: Theme.border
+        }
+
+        contentItem: ColumnLayout {
+            spacing: Theme.spacingLg
+
+            Label {
+                text: "Instalar APK"
+                color: Theme.textPrimary
+                font.pixelSize: Theme.fontTitle
+                font.weight: Font.DemiBold
+            }
+
+            // Arquivo escolhido
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: fileRow.implicitHeight + Theme.spacingMd * 2
+                radius: Theme.radiusMd
+                color: Theme.surfaceAlt
+
+                RowLayout {
+                    id: fileRow
+                    anchors.fill: parent
+                    anchors.margins: Theme.spacingMd
+                    spacing: Theme.spacingMd
+
+                    Text {
+                        text: "android"
+                        font.family: Theme.iconFont
+                        font.pixelSize: 28
+                        color: Theme.success
+                    }
+                    ColumnLayout {
+                        spacing: 2
+                        Layout.fillWidth: true
+                        Label {
+                            text: apkInstallViewModel.apkName
+                            color: Theme.textPrimary
+                            font.pixelSize: Theme.fontBody
+                            font.weight: Font.DemiBold
+                            elide: Text.ElideMiddle
+                            Layout.fillWidth: true
+                        }
+                        Label {
+                            text: apkInstallViewModel.apkSize
+                            color: Theme.textSecondary
+                            font.pixelSize: Theme.fontCaption
+                        }
+                    }
+                }
+            }
+
+            Label {
+                text: "Será instalado em " + (grid.count === 1 ? "1 device listado" : grid.count + " devices listados")
+                      + ". Se o app já existir, ele é atualizado mantendo os dados."
+                color: Theme.textSecondary
+                font.pixelSize: Theme.fontBody
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: Theme.spacingSm
+                spacing: Theme.spacingSm
+
+                Item { Layout.fillWidth: true }
+                Button {
+                    text: "Cancelar"
+                    flat: true
+                    onClicked: installDialog.reject()
+                }
+                Button {
+                    id: confirmInstall
+                    objectName: "confirmInstall"
+                    text: grid.count === 1 ? "Instalar" : "Instalar em " + grid.count
+                    enabled: grid.count > 0
+                    leftPadding: Theme.spacingLg
+                    rightPadding: Theme.spacingLg
+                    onClicked: installDialog.accept()
+
+                    contentItem: Label {
+                        text: confirmInstall.text
+                        color: Theme.accentText
+                        font.pixelSize: Theme.fontBody
+                        font.weight: Font.DemiBold
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    background: Rectangle {
+                        implicitHeight: 36
+                        radius: Theme.radiusSm
+                        color: confirmInstall.down ? Qt.darker(Theme.accent, 1.15)
+                             : confirmInstall.hovered ? Qt.lighter(Theme.accent, 1.08)
+                             : Theme.accent
+                    }
+                }
+            }
+        }
+
+        onAccepted: apkInstallViewModel.installOnAll()
+    }
+
+    // Resultado da instalação
+    Label {
+        id: toast
+        property bool ok: true
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottomMargin: Theme.spacingXl
+        width: Math.min(implicitWidth, parent.width - Theme.spacingXl * 2)
+        leftPadding: Theme.spacingLg
+        rightPadding: Theme.spacingLg
+        topPadding: Theme.spacingSm + 2
+        bottomPadding: Theme.spacingSm + 2
+        background: Rectangle { color: Theme.scrim; radius: Theme.radiusMd }
+        color: toast.ok ? Theme.scrimText : "#ff8a8a"
+        font.pixelSize: Theme.fontBody
+        elide: Text.ElideRight
+        opacity: 0
+        visible: opacity > 0
+        z: 10
+
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+
+        Timer {
+            id: toastTimer
+            interval: 4000
+            onTriggered: toast.opacity = 0
+        }
+
+        function show(message, ok) {
+            toast.text = message
+            toast.ok = ok
+            toast.opacity = 1
+            toastTimer.restart()
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -27,6 +199,13 @@ Item {
                     : grid.count === 1 ? "1 conectado"
                     : grid.count + " conectados"
 
+            IconButton {
+                objectName: "gridApkButton"
+                iconName: "apk_install"
+                tip: "Instalar APK em todos os devices"
+                enabled: grid.count > 0
+                onClicked: apkFileDialog.open()
+            }
             IconButton {
                 iconName: "refresh"
                 tip: "Atualizar"
@@ -140,6 +319,11 @@ Item {
                                     elide: Text.ElideRight
                                     Layout.fillWidth: true
                                 }
+                            }
+
+                            InstallProgressBar {
+                                Layout.fillWidth: true
+                                install: apkInstallViewModel.installs[cell.serial]
                             }
                         }
 
