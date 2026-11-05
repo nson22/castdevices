@@ -1,6 +1,6 @@
 [project]
 name = "castdevices"
-version = "0.0.5a0"
+version = "0.0.6a0"
 description = "CastDevices: app desktop (PySide6/QML) para espelhar e controlar devices Android, compatível com o scrcpy-server"
 readme = "README.md"
 license = "Apache-2.0"

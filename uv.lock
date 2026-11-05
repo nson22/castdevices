@@ -70,7 +70,7 @@ wheels = [
 
 [[package]]
 name = "castdevices"
-version = "0.0.5a0"
+version = "0.0.6a0"
 source = { editable = "." }
 dependencies = [
     { name = "adbutils" },
