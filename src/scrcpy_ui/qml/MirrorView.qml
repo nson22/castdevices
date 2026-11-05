@@ -168,7 +168,8 @@ Item {
                     readonly property real sx: videoOutput.contentRect.width / Math.max(1, inspectorViewModel.screenWidth)
                     readonly property real sy: videoOutput.contentRect.height / Math.max(1, inspectorViewModel.screenHeight)
 
-                    visible: inspectorToggle.checked && inspectorViewModel.hasSelection
+                    // Escondido enquanto recaptura: os bounds são da tela anterior
+                    visible: inspectorToggle.checked && inspectorViewModel.hasSelection && !inspectorViewModel.busy
                     x: videoOutput.contentRect.x + bounds.x * sx
                     y: videoOutput.contentRect.y + bounds.y * sy
                     width: bounds.width * sx

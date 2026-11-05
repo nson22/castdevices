@@ -76,16 +76,8 @@ Rectangle {
                 anchors.topMargin: Theme.spacingXs
                 clip: true
                 model: inspectorViewModel.hierarchyModel
-
-                // Recapturando: a árvore atual pulsa (mesmo "pulse" do skeleton)
-                readonly property bool refreshing: inspectorViewModel.busy && rows > 0
-                onRefreshingChanged: if (!refreshing) opacity = 1
-                SequentialAnimation on opacity {
-                    running: tree.refreshing
-                    loops: Animation.Infinite
-                    NumberAnimation { from: 1; to: 0.5; duration: 1000; easing.type: Easing.Bezier; easing.bezierCurve: [0.4, 0, 0.6, 1, 1, 1] }
-                    NumberAnimation { from: 0.5; to: 1; duration: 1000; easing.type: Easing.Bezier; easing.bezierCurve: [0.4, 0, 0.6, 1, 1, 1] }
-                }
+                // Capturando (primeira vez ou tela trocada): o skeleton ocupa o lugar
+                visible: !inspectorViewModel.busy
                 // Painel criado com uma captura já existente (ex.: hot reload)
                 Component.onCompleted: expandRecursively()
                 selectionModel: ItemSelectionModel {
@@ -153,11 +145,11 @@ Rectangle {
                 }
             }
 
-            // Carregando a primeira captura: skeleton de texto (estilo shadcn/ui).
-            // Nas recapturas a árvore atual continua visível, pulsando igual.
+            // Carregando (primeira captura, tela do device trocada ou recarregar
+            // manual): skeleton de texto no estilo shadcn/ui no lugar da árvore
             SkeletonText {
                 anchors.fill: parent
-                visible: inspectorViewModel.busy && tree.rows === 0
+                visible: inspectorViewModel.busy
             }
 
             Label {
@@ -170,7 +162,7 @@ Rectangle {
         }
 
         Rectangle {
-            visible: inspectorViewModel.hasSelection
+            visible: inspectorViewModel.hasSelection && !inspectorViewModel.busy
             Layout.fillWidth: true
             implicitHeight: 1
             color: Theme.border
@@ -178,7 +170,7 @@ Rectangle {
 
         ScrollView {
             id: detailsScroll
-            visible: inspectorViewModel.hasSelection
+            visible: inspectorViewModel.hasSelection && !inspectorViewModel.busy
             Layout.fillWidth: true
             Layout.preferredHeight: Math.min(details.implicitHeight + Theme.spacingLg * 2, panel.height * 0.4)
             contentWidth: availableWidth
