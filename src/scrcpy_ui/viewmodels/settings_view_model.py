@@ -32,12 +32,12 @@ THEME_MODES = ("system", "light", "dark")
 
 def _default_screenshot_dir() -> str:
     pictures = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.PicturesLocation)
-    return str(Path(pictures) / "scrcpy-ui")
+    return str(Path(pictures) / "CastDevices")
 
 
 def _default_recording_dir() -> str:
     movies = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.MoviesLocation)
-    return str(Path(movies) / "scrcpy-ui")
+    return str(Path(movies) / "CastDevices")
 
 
 class SettingsViewModel(QObject):

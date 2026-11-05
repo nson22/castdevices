@@ -1,4 +1,4 @@
-"""Modo desenvolvimento: `uv run scrcpy-ui-dev`.
+"""Modo desenvolvimento: `uv run castdevices-dev`.
 
 - .qml salvo -> hot reload na hora (QmlHotReloader, sem reiniciar o app)
 - .py salvo  -> o app reinicia sozinho (watchfiles)

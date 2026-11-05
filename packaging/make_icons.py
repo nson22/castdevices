@@ -1,11 +1,11 @@
-"""Gera os ícones do app a partir de resources/icons/scrcpy-ui.svg.
+"""Gera os ícones do app a partir de resources/icons/castdevices.svg.
 
     uv run python packaging/make_icons.py
 
 Saídas em resources/icons/:
-- scrcpy-ui.png (512 px)  -> ícone da janela (Qt) e do .desktop no Linux
-- scrcpy-ui.ico            -> executável do Windows (16..256 px)
-- scrcpy-ui.icns           -> .app do macOS (16..1024 px)
+- castdevices.png (512 px)  -> ícone da janela (Qt) e do .desktop no Linux
+- castdevices.ico            -> executável do Windows (16..256 px)
+- castdevices.icns           -> .app do macOS (16..1024 px)
 
 Renderiza o SVG com o QtSvg (já vem no PySide6) e grava .ico/.icns com o
 Pillow (dependência do adbutils).
@@ -23,7 +23,7 @@ from PySide6.QtGui import QGuiApplication, QImage, QPainter
 from PySide6.QtSvg import QSvgRenderer
 
 ICONS = Path(__file__).resolve().parents[1] / "resources" / "icons"
-SVG = ICONS / "scrcpy-ui.svg"
+SVG = ICONS / "castdevices.svg"
 
 
 def render(size: int) -> Image.Image:
@@ -45,19 +45,19 @@ def main() -> None:
     if not SVG.is_file():
         sys.exit(f"SVG não encontrado: {SVG}")
 
-    render(512).save(ICONS / "scrcpy-ui.png")
+    render(512).save(ICONS / "castdevices.png")
 
     # Cada tamanho renderizado direto do SVG (melhor nitidez que redimensionar)
     ico_sizes = [16, 24, 32, 48, 64, 128, 256]
     images = [render(s) for s in ico_sizes]
-    images[-1].save(ICONS / "scrcpy-ui.ico", sizes=[(s, s) for s in ico_sizes],
+    images[-1].save(ICONS / "castdevices.ico", sizes=[(s, s) for s in ico_sizes],
                     append_images=images[:-1])
 
     icns_base = render(1024)
-    icns_base.save(ICONS / "scrcpy-ui.icns",
+    icns_base.save(ICONS / "castdevices.icns",
                    append_images=[render(s) for s in (16, 32, 64, 128, 256, 512)])
 
-    for name in ("scrcpy-ui.png", "scrcpy-ui.ico", "scrcpy-ui.icns"):
+    for name in ("castdevices.png", "castdevices.ico", "castdevices.icns"):
         print(f"{name}: {(ICONS / name).stat().st_size / 1024:.0f} KB")
 
 

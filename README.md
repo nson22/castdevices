@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="resources/icons/scrcpy-ui.png" width="128" alt="Ícone do SCRCPY UI">
+  <img src="resources/icons/castdevices.png" width="128" alt="Ícone do CastDevices">
 </p>
 
-<h1 align="center">SCRCPY UI</h1>
+<h1 align="center">CastDevices</h1>
 
 <p align="center">
   Espelhe e controle devices Android pelo computador — Windows, macOS e Linux.<br>
@@ -97,13 +97,13 @@ scrcpy (platform-tools 37.0.0). O device precisa estar com a **depuração USB**
 
 | Sistema | Arquivo | Como usar |
 |---|---|---|
-| Windows | `scrcpy-ui-<versão>-win64.zip` | Extraia e abra `scrcpy-ui.exe` |
-| macOS (Apple Silicon) | `scrcpy-ui-<versão>-macos-arm64.dmg` | Abra o `.dmg` e arraste o **SCRCPY UI** para Aplicativos |
-| Linux (x86_64) | `scrcpy-ui-<versão>-linux-x86_64.tar.gz` | Extraia e rode `./scrcpy-ui`, ou `./install.sh` para criar o atalho no menu |
+| Windows | `castdevices-<versão>-win64.zip` | Extraia e abra `castdevices.exe` |
+| macOS (Apple Silicon) | `castdevices-<versão>-macos-arm64.dmg` | Abra o `.dmg` e arraste o **CastDevices** para Aplicativos |
+| Linux (x86_64) | `castdevices-<versão>-linux-x86_64.tar.gz` | Extraia e rode `./castdevices`, ou `./install.sh` para criar o atalho no menu |
 
 **macOS:** o app ainda não é assinado pela Apple. Na primeira vez, o macOS bloqueia a abertura.
 Clique com o botão direito no app → **Abrir**, ou rode
-`xattr -dr com.apple.quarantine "/Applications/SCRCPY UI.app"` no Terminal.
+`xattr -dr com.apple.quarantine "/Applications/CastDevices.app"` no Terminal.
 
 **Linux:** precisa de uma distro com glibc 2.35 ou mais nova (Ubuntu 22.04+, Debian 12+,
 Fedora 36+). Para acessar o device via USB sem root, pode ser preciso configurar as regras
@@ -129,7 +129,7 @@ Sem o `fetch_adb.py`, o app usa o `adb` que o [adbutils](https://pypi.org/projec
 ### Modo desenvolvimento (hot reload)
 
 ```sh
-uv run scrcpy-ui-dev
+uv run castdevices-dev
 ```
 
 - Salvar um `.qml` recarrega a interface na hora, sem fechar o app — mantém posição/tamanho da
@@ -145,12 +145,12 @@ Sempre no próprio sistema (o PyInstaller não faz build cruzado):
 
 ```sh
 uv run python packaging/fetch_adb.py      # adb oficial (versão fixada + SHA-256)
-uv run pyinstaller scrcpy-ui.spec --noconfirm
+uv run pyinstaller castdevices.spec --noconfirm
 ```
 
-A saída fica em `dist/scrcpy-ui/` no Windows/Linux e em `dist/SCRCPY UI.app` no macOS.
+A saída fica em `dist/castdevices/` no Windows/Linux e em `dist/CastDevices.app` no macOS.
 
-O ícone vem de `resources/icons/scrcpy-ui.svg`; depois de editar o SVG, gere os PNG/ICO/ICNS com
+O ícone vem de `resources/icons/castdevices.svg`; depois de editar o SVG, gere os PNG/ICO/ICNS com
 `uv run python packaging/make_icons.py`.
 
 ## Release
@@ -190,7 +190,7 @@ src/scrcpy_ui/
 
 ## Licença
 
-O SCRCPY UI é licenciado sob a [Apache License 2.0](LICENSE), a mesma licença do
+O CastDevices é licenciado sob a [Apache License 2.0](LICENSE), a mesma licença do
 [scrcpy](https://github.com/Genymobile/scrcpy). Os pacotes incluem componentes de terceiros sob
 as próprias licenças, entre eles o `scrcpy-server` (Apache-2.0), o Qt/PySide6 e o FFmpeg
 (LGPL-3.0, como bibliotecas dinâmicas substituíveis) e o adb do Android Platform-Tools. Os
@@ -198,7 +198,7 @@ detalhes e os links para o código-fonte estão em [THIRD_PARTY_NOTICES.md](THIR
 e os textos completos, em [`LICENSES/`](LICENSES). Dentro do app, veja em
 **Configurações → Sobre**.
 
-O SCRCPY UI é um projeto independente, sem vínculo oficial com o scrcpy ou a Genymobile.
+O CastDevices é um projeto independente, sem vínculo oficial com o scrcpy ou a Genymobile.
 
 ## Status
 

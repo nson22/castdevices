@@ -275,7 +275,7 @@ Item {
 
                     SettingsSection {
                         title: "Sobre"
-                        description: "SCRCPY UI " + settingsViewModel.appVersion + " · Apache License 2.0"
+                        description: "CastDevices " + settingsViewModel.appVersion + " · Apache License 2.0"
 
                         SettingRow {
                             label: "Licenças"

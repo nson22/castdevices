@@ -1,16 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
 # Build (Windows, macOS ou Linux, sempre no próprio sistema):
 #   uv run python packaging/fetch_adb.py      # adb oficial fixado (uma vez)
-#   uv run pyinstaller scrcpy-ui.spec --noconfirm
+#   uv run pyinstaller castdevices.spec --noconfirm
 # Saída:
-#   Windows/Linux: dist/scrcpy-ui/  (executável scrcpy-ui[.exe] + _internal/)
-#   macOS:         dist/SCRCPY UI.app
+#   Windows/Linux: dist/castdevices/  (executável castdevices[.exe] + _internal/)
+#   macOS:         dist/CastDevices.app
 import sys
 from pathlib import Path
 
 from PyInstaller.utils.hooks import copy_metadata
 
-APP_NAME = "SCRCPY UI"
+APP_NAME = "CastDevices"
 ICONS = Path("resources/icons")
 ADB_DIR = Path("resources/platform-tools")
 
@@ -36,7 +36,7 @@ a = Analysis(
         ("THIRD_PARTY_NOTICES.md", "licenses"),
         ("LICENSES", "licenses/LICENSES"),
         # Versão do app (importlib.metadata) dentro do executável
-        *copy_metadata("scrcpy-ui"),
+        *copy_metadata("castdevices"),
     ],
     hiddenimports=[
         "PySide6.QtQuickControls2",
@@ -96,10 +96,10 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="scrcpy-ui",
+    name="castdevices",
     console=False,
     upx=False,
-    icon=str(ICONS / ("scrcpy-ui.ico" if sys.platform == "win32" else "scrcpy-ui.icns")),
+    icon=str(ICONS / ("castdevices.ico" if sys.platform == "win32" else "castdevices.icns")),
 )
 
 coll = COLLECT(
@@ -107,15 +107,15 @@ coll = COLLECT(
     a.binaries,
     a.datas,
     upx=False,
-    name="scrcpy-ui",
+    name="castdevices",
 )
 
 if sys.platform == "darwin":
     app = BUNDLE(
         coll,
         name=f"{APP_NAME}.app",
-        icon=str(ICONS / "scrcpy-ui.icns"),
-        bundle_identifier="io.github.nson22.scrcpyui",
+        icon=str(ICONS / "castdevices.icns"),
+        bundle_identifier="io.github.nson22.castdevices",
         info_plist={
             "CFBundleName": APP_NAME,
             "CFBundleDisplayName": APP_NAME,

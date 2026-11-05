@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=SCRCPY UI
+Name=CastDevices
 Comment=Espelhe e controle devices Android
-Exec=scrcpy-ui
-Icon=scrcpy-ui
+Exec=castdevices
+Icon=castdevices
 Terminal=false
 Categories=Utility;Development;

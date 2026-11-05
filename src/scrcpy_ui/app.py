@@ -45,8 +45,8 @@ def run(dev_mode: bool = False) -> int:
     # Nome interno (define a pasta das configurações -- não mudar) e nome exibido
     app.setOrganizationName("scrcpy-ui")
     app.setApplicationName("scrcpy-ui")
-    app.setApplicationDisplayName("SCRCPY UI")
-    app.setWindowIcon(QIcon(str(ICONS_DIR / "scrcpy-ui.png")))
+    app.setApplicationDisplayName("CastDevices")
+    app.setWindowIcon(QIcon(str(ICONS_DIR / "castdevices.png")))
     _load_fonts(app)
 
     preview_store = PreviewImageStore()

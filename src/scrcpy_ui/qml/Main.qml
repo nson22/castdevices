@@ -9,7 +9,7 @@ ApplicationWindow {
     minimumWidth: 460
     minimumHeight: 480
     visible: true
-    // O Qt acrescenta " - SCRCPY UI" (applicationDisplayName); vazio = só o nome do app
+    // O Qt acrescenta " - CastDevices" (applicationDisplayName); vazio = só o nome do app
     title: ""
     color: Theme.background
 

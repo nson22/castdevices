@@ -281,7 +281,7 @@ class MirrorViewModel(QObject):
             return
         recording_dir = Path(self._settings.recordingDir)
         recording_dir.mkdir(parents=True, exist_ok=True)
-        path = recording_dir / f"scrcpy-ui_{datetime.now():%Y%m%d_%H%M%S}.mkv"
+        path = recording_dir / f"castdevices_{datetime.now():%Y%m%d_%H%M%S}.mkv"
         try:
             self._recorder = SessionRecorder(
                 str(path),
@@ -319,7 +319,7 @@ class MirrorViewModel(QObject):
         image = self._last_frame.toImage()
         screenshot_dir = Path(self._settings.screenshotDir)
         screenshot_dir.mkdir(parents=True, exist_ok=True)
-        path = screenshot_dir / f"scrcpy-ui_{datetime.now():%Y%m%d_%H%M%S}.png"
+        path = screenshot_dir / f"castdevices_{datetime.now():%Y%m%d_%H%M%S}.png"
         if image.save(str(path)):
             self.screenshotSaved.emit(str(path))
         else:

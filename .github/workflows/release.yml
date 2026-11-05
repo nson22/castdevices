@@ -48,7 +48,7 @@ jobs:
       - name: Nome do pacote
         run: |
           VERSION="${TAG:-dev-${GITHUB_SHA::7}}"
-          echo "PACKAGE=scrcpy-ui-${VERSION}-${{ matrix.suffix }}" >> "$GITHUB_ENV"
+          echo "PACKAGE=castdevices-${VERSION}-${{ matrix.suffix }}" >> "$GITHUB_ENV"
 
       - uses: astral-sh/setup-uv@v6
 
@@ -66,16 +66,16 @@ jobs:
         run: uv run python packaging/fetch_adb.py
 
       - name: PyInstaller
-        run: uv run pyinstaller scrcpy-ui.spec --noconfirm
+        run: uv run pyinstaller castdevices.spec --noconfirm
 
       - name: Smoke test
         run: |
           case "${{ matrix.platform }}" in
-            windows) EXE="dist/scrcpy-ui/scrcpy-ui.exe" ;;
-            macos)   EXE="dist/SCRCPY UI.app/Contents/MacOS/scrcpy-ui" ;;
-            linux)   EXE="dist/scrcpy-ui/scrcpy-ui" ;;
+            windows) EXE="dist/castdevices/castdevices.exe" ;;
+            macos)   EXE="dist/CastDevices.app/Contents/MacOS/castdevices" ;;
+            linux)   EXE="dist/castdevices/castdevices" ;;
           esac
-          if [ "${{ matrix.platform }}" = "macos" ]; then ROOT="dist/SCRCPY UI.app"; else ROOT="dist/scrcpy-ui"; fi
+          if [ "${{ matrix.platform }}" = "macos" ]; then ROOT="dist/CastDevices.app"; else ROOT="dist/castdevices"; fi
           ADB_DIR="$(dirname "$(find "$ROOT" -path '*resources/platform-tools/VERSION' | head -n 1)")"
           echo "exe: $EXE | adb: $ADB_DIR"
           uv run python packaging/smoke_test.py "$EXE" "$ADB_DIR"
@@ -83,28 +83,28 @@ jobs:
       # Licenças também na raiz do pacote (além de dentro do app), fáceis de achar
       - name: Licenças na raiz do pacote
         if: matrix.platform != 'macos'
-        run: cp -R LICENSE NOTICE THIRD_PARTY_NOTICES.md LICENSES dist/scrcpy-ui/
+        run: cp -R LICENSE NOTICE THIRD_PARTY_NOTICES.md LICENSES dist/castdevices/
 
       - name: Empacotar (Windows)
         if: matrix.platform == 'windows'
         shell: pwsh
-        run: Compress-Archive -Path dist/scrcpy-ui -DestinationPath $env:PACKAGE
+        run: Compress-Archive -Path dist/castdevices -DestinationPath $env:PACKAGE
 
       - name: Empacotar (macOS)
         if: matrix.platform == 'macos'
         run: |
           mkdir -p dmg
-          cp -R "dist/SCRCPY UI.app" dmg/
+          cp -R "dist/CastDevices.app" dmg/
           cp -R LICENSE NOTICE THIRD_PARTY_NOTICES.md LICENSES dmg/
           ln -s /Applications dmg/Applications
-          hdiutil create -volname "SCRCPY UI" -srcfolder dmg -ov -format UDZO "$PACKAGE"
+          hdiutil create -volname "CastDevices" -srcfolder dmg -ov -format UDZO "$PACKAGE"
 
       - name: Empacotar (Linux)
         if: matrix.platform == 'linux'
         run: |
-          cp packaging/linux/scrcpy-ui.desktop packaging/linux/install.sh resources/icons/scrcpy-ui.png dist/scrcpy-ui/
-          chmod +x dist/scrcpy-ui/install.sh dist/scrcpy-ui/scrcpy-ui
-          tar -czf "$PACKAGE" -C dist scrcpy-ui
+          cp packaging/linux/castdevices.desktop packaging/linux/install.sh resources/icons/castdevices.png dist/castdevices/
+          chmod +x dist/castdevices/install.sh dist/castdevices/castdevices
+          tar -czf "$PACKAGE" -C dist castdevices
 
       - name: SHA-256
         run: |
@@ -141,9 +141,9 @@ jobs:
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             NOTES="packaging/release-notes/$TAG.md"
             if [ -f "$NOTES" ]; then
-              gh release create "$TAG" --title "SCRCPY UI $TAG" --notes-file "$NOTES" --latest
+              gh release create "$TAG" --title "CastDevices $TAG" --notes-file "$NOTES" --latest
             else
-              gh release create "$TAG" --title "SCRCPY UI $TAG" --generate-notes --latest
+              gh release create "$TAG" --title "CastDevices $TAG" --generate-notes --latest
             fi
           fi
           gh release upload "$TAG" packages/* --clobber

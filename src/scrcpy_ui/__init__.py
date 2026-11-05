@@ -1,7 +1,7 @@
 from importlib.metadata import PackageNotFoundError, version
 
 try:
-    __version__ = version("scrcpy-ui")
+    __version__ = version("castdevices")
 except PackageNotFoundError:  # rodando sem o pacote instalado
     __version__ = "dev"
 

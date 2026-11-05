@@ -1,11 +1,11 @@
 # Componentes de terceiros
 
-O SCRCPY UI é licenciado sob a [Apache License 2.0](LICENSE). Os pacotes distribuídos nos
+O CastDevices é licenciado sob a [Apache License 2.0](LICENSE). Os pacotes distribuídos nos
 releases (Windows, macOS e Linux) incluem os componentes abaixo, cada um sob a sua própria
 licença. Os textos completos das licenças estão na pasta [`LICENSES/`](LICENSES), que também vai
 dentro de cada pacote.
 
-| Componente | Uso no SCRCPY UI | Licença | Texto |
+| Componente | Uso no CastDevices | Licença | Texto |
 |---|---|---|---|
 | [scrcpy-server](https://github.com/Genymobile/scrcpy) 4.0 — © 2018 Genymobile, © 2018-2026 Romain Vimont | Servidor que roda no device (captura, encode, controle) | Apache-2.0 | [Apache-2.0](LICENSES/Apache-2.0.txt) |
 | [Qt for Python (PySide6, Shiboken6)](https://www.qt.io/qt-for-python) e Qt 6 — © The Qt Company Ltd. | Interface (QML), vídeo e áudio | LGPL-3.0-only | [LGPL-3.0](LICENSES/LGPL-3.0-only.txt) + [GPL-3.0](LICENSES/GPL-3.0-only.txt) |
@@ -24,22 +24,22 @@ bootloader, que permite distribuir o resultado sob qualquer licença).
 
 ## Qt e FFmpeg (LGPL-3.0)
 
-O SCRCPY UI usa o Qt (via PySide6) e o FFmpeg sob a GNU Lesser General Public License, versão 3.
+O CastDevices usa o Qt (via PySide6) e o FFmpeg sob a GNU Lesser General Public License, versão 3.
 Para cumprir a LGPL:
 
 - **As bibliotecas são dinâmicas e substituíveis.** Os pacotes são gerados no modo "pasta" do
   PyInstaller: as bibliotecas do Qt/PySide6 e do FFmpeg ficam como arquivos separados
   (`.dll`/`.dylib`/`.so`) dentro de `_internal/` (Windows/Linux) ou de
-  `SCRCPY UI.app/Contents/Frameworks/` (macOS). Você pode trocá-las por versões compatíveis
+  `CastDevices.app/Contents/Frameworks/` (macOS). Você pode trocá-las por versões compatíveis
   modificadas por você. No macOS, depois de trocar, reassine o app localmente
-  (`codesign --force --deep --sign - "SCRCPY UI.app"`).
+  (`codesign --force --deep --sign - "CastDevices.app"`).
 - **Código-fonte das bibliotecas:**
   - Qt 6: https://download.qt.io/official_releases/qt/ e https://code.qt.io
   - PySide6 / Shiboken6 6.12: https://download.qt.io/official_releases/QtForPython/ e
     https://code.qt.io/cgit/pyside/pyside-setup.git
   - FFmpeg 9.0: https://ffmpeg.org/download.html — o build usado pelo PyAV é feito pelos
     scripts de https://github.com/PyAV-Org/pyav-ffmpeg
-- **Código-fonte do SCRCPY UI**, para refazer o pacote com bibliotecas modificadas:
+- **Código-fonte do CastDevices**, para refazer o pacote com bibliotecas modificadas:
   https://github.com/nson22/scrcpy_ui (instruções de build no README).
 
 Se não conseguir obter algum desses códigos-fonte pelos links acima, abra uma
@@ -48,8 +48,8 @@ Se não conseguir obter algum desses códigos-fonte pelos links acima, abra uma
 ### Módulos do Qt que não vão no pacote
 
 Alguns módulos do Qt são licenciados só sob GPL (ou licença comercial), sem a opção LGPL, e por
-isso não podem ser distribuídos junto de um app Apache-2.0. O SCRCPY UI não usa nenhum deles, e o
-build (`scrcpy-ui.spec`) os deixa de fora: Qt Quick Timeline, Qt Shader Tools, Qt Quick 3D,
+isso não podem ser distribuídos junto de um app Apache-2.0. O CastDevices não usa nenhum deles, e o
+build (`castdevices.spec`) os deixa de fora: Qt Quick Timeline, Qt Shader Tools, Qt Quick 3D,
 Qt Virtual Keyboard, Qt Charts, Qt Data Visualization, Qt Graphs, Qt Lottie, Qt HTTP Server,
 Qt Protobuf/gRPC, Qt MQTT, Qt CoAP, Qt OPC UA e Qt Wayland Compositor.
 
@@ -59,5 +59,5 @@ próximos releases já saem sem elas.
 
 ## scrcpy
 
-O SCRCPY UI é um cliente independente: ele **não é** um projeto oficial do scrcpy nem da
+O CastDevices é um cliente independente: ele **não é** um projeto oficial do scrcpy nem da
 Genymobile. Ele reutiliza o `scrcpy-server` oficial, sem modificações, sob a Apache License 2.0.
