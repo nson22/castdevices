@@ -76,6 +76,16 @@ Rectangle {
                 anchors.topMargin: Theme.spacingXs
                 clip: true
                 model: inspectorViewModel.hierarchyModel
+
+                // Recapturando: a árvore atual pulsa (mesmo "pulse" do skeleton)
+                readonly property bool refreshing: inspectorViewModel.busy && rows > 0
+                onRefreshingChanged: if (!refreshing) opacity = 1
+                SequentialAnimation on opacity {
+                    running: tree.refreshing
+                    loops: Animation.Infinite
+                    NumberAnimation { from: 1; to: 0.5; duration: 1000; easing.type: Easing.Bezier; easing.bezierCurve: [0.4, 0, 0.6, 1, 1, 1] }
+                    NumberAnimation { from: 0.5; to: 1; duration: 1000; easing.type: Easing.Bezier; easing.bezierCurve: [0.4, 0, 0.6, 1, 1, 1] }
+                }
                 // Painel criado com uma captura já existente (ex.: hot reload)
                 Component.onCompleted: expandRecursively()
                 selectionModel: ItemSelectionModel {
@@ -143,12 +153,11 @@ Rectangle {
                 }
             }
 
-            // Carregando: esqueleto da árvore na primeira captura; nas recapturas
-            // a árvore atual continua visível com o brilho passando por cima
-            ShimmerSkeleton {
+            // Carregando a primeira captura: skeleton de texto (estilo shadcn/ui).
+            // Nas recapturas a árvore atual continua visível, pulsando igual.
+            SkeletonText {
                 anchors.fill: parent
-                visible: inspectorViewModel.busy
-                skeleton: tree.rows === 0
+                visible: inspectorViewModel.busy && tree.rows === 0
             }
 
             Label {
