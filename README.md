@@ -188,6 +188,18 @@ src/scrcpy_ui/
   viewmodels/
 ```
 
+## Licença
+
+O SCRCPY UI é licenciado sob a [Apache License 2.0](LICENSE), a mesma licença do
+[scrcpy](https://github.com/Genymobile/scrcpy). Os pacotes incluem componentes de terceiros sob
+as próprias licenças, entre eles o `scrcpy-server` (Apache-2.0), o Qt/PySide6 e o FFmpeg
+(LGPL-3.0, como bibliotecas dinâmicas substituíveis) e o adb do Android Platform-Tools. Os
+detalhes e os links para o código-fonte estão em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md),
+e os textos completos, em [`LICENSES/`](LICENSES). Dentro do app, veja em
+**Configurações → Sobre**.
+
+O SCRCPY UI é um projeto independente, sem vínculo oficial com o scrcpy ou a Genymobile.
+
 ## Status
 
 Em desenvolvimento ativo (alpha). O protocolo e os formatos de mídia foram validados contra um

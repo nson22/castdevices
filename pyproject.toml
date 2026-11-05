@@ -3,6 +3,8 @@ name = "scrcpy-ui"
 version = "0.0.4a0"
 description = "SCRCPY UI: app desktop (PySide6/QML) para espelhar e controlar devices Android, compatível com o scrcpy-server"
 readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE", "LICENSES/*.txt"]
 requires-python = ">=3.12"
 dependencies = [
     "adbutils>=2.12.0",

@@ -274,6 +274,36 @@ Item {
                     }
 
                     SettingsSection {
+                        title: "Sobre"
+                        description: "SCRCPY UI " + settingsViewModel.appVersion + " · Apache License 2.0"
+
+                        SettingRow {
+                            label: "Licenças"
+                            description: "Usa o scrcpy-server (Apache 2.0), o Qt/PySide6 e o FFmpeg (LGPL 3.0), "
+                                         + "o adb do Android Platform-Tools e outros componentes de código aberto. "
+                                         + "Os textos das licenças e os links para o código-fonte estão na pasta de licenças."
+                            showDivider: false
+
+                            Button {
+                                objectName: "openLicensesButton"
+                                text: "Abrir pasta"
+                                flat: true
+                                onClicked: Qt.openUrlExternally(settingsViewModel.licensesFolderUrl)
+                            }
+                        }
+                        SettingRow {
+                            label: "Código-fonte"
+                            description: "github.com/nson22/scrcpy_ui"
+
+                            Button {
+                                text: "Abrir"
+                                flat: true
+                                onClicked: Qt.openUrlExternally("https://github.com/nson22/scrcpy_ui")
+                            }
+                        }
+                    }
+
+                    SettingsSection {
                         title: "Comandos do mouse"
                         description: "Como o mouse controla o device na tela de espelhamento."
 

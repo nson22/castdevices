@@ -1,0 +1,29 @@
+SCRCPY UI
+Copyright 2026 nson22 and the SCRCPY UI contributors
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product includes and redistributes third-party software:
+
+- scrcpy-server (resources/scrcpy-server/), from scrcpy
+  https://github.com/Genymobile/scrcpy
+  Copyright (C) 2018 Genymobile
+  Copyright (C) 2018-2026 Romain Vimont
+  Licensed under the Apache License, Version 2.0.
+
+- Android SDK Platform-Tools (adb), from the Android Open Source Project
+  https://developer.android.com/tools/releases/platform-tools
+  Copyright The Android Open Source Project. See the NOTICE.txt shipped
+  next to the adb binary for its licenses.
+
+- Qt for Python (PySide6, Shiboken6) and Qt, by The Qt Company Ltd.,
+  used under the GNU Lesser General Public License v3.
+
+- FFmpeg (bundled with PyAV), used under the GNU Lesser General Public
+  License v3 or later.
+
+- Material Symbols (Google LLC), Apache License 2.0; Roboto (The Roboto
+  Project Authors), SIL Open Font License 1.1.
+
+Full details, license texts and source code locations are in
+THIRD_PARTY_NOTICES.md and the LICENSES/ directory.

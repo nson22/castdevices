@@ -8,6 +8,8 @@
 import sys
 from pathlib import Path
 
+from PyInstaller.utils.hooks import copy_metadata
+
 APP_NAME = "SCRCPY UI"
 ICONS = Path("resources/icons")
 ADB_DIR = Path("resources/platform-tools")
@@ -28,6 +30,13 @@ a = Analysis(
         ("resources/scrcpy-server", "resources/scrcpy-server"),
         # adb oficial fixado (o mesmo do scrcpy) -- ver packaging/fetch_adb.py
         (str(ADB_DIR), "resources/platform-tools"),
+        # Licenças (Apache-2.0 do projeto + terceiros; LGPL do Qt/FFmpeg)
+        ("LICENSE", "licenses"),
+        ("NOTICE", "licenses"),
+        ("THIRD_PARTY_NOTICES.md", "licenses"),
+        ("LICENSES", "licenses/LICENSES"),
+        # Versão do app (importlib.metadata) dentro do executável
+        *copy_metadata("scrcpy-ui"),
     ],
     hiddenimports=[
         "PySide6.QtQuickControls2",

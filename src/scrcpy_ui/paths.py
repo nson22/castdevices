@@ -10,8 +10,11 @@ from pathlib import Path
 
 if getattr(sys, "frozen", False):
     RESOURCES_DIR = Path(sys._MEIPASS) / "resources"
+    # LICENSE, NOTICE, THIRD_PARTY_NOTICES.md e LICENSES/ (ver scrcpy-ui.spec)
+    LICENSES_DIR = Path(sys._MEIPASS) / "licenses"
 else:
     RESOURCES_DIR = Path(__file__).resolve().parents[2] / "resources"
+    LICENSES_DIR = Path(__file__).resolve().parents[2]
 
 QML_DIR = Path(__file__).resolve().parent / "qml"
 FONTS_DIR = RESOURCES_DIR / "fonts"

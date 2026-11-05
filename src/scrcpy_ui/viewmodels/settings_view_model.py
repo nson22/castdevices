@@ -6,6 +6,8 @@ from pathlib import Path
 
 from PySide6.QtCore import Property, QObject, QStandardPaths, QUrl, Signal, Slot
 
+from scrcpy_ui import __version__
+from scrcpy_ui.paths import LICENSES_DIR
 from scrcpy_ui.storage.settings_store import SettingsStore
 
 _SCREENSHOT_DIR_KEY = "screenshot_dir"
@@ -245,6 +247,17 @@ class SettingsViewModel(QObject):
         self._keep_app_data_on_uninstall = value
         self._store.set(_KEEP_APP_DATA_ON_UNINSTALL_KEY, "1" if value else "0")
         self.keepAppDataOnUninstallChanged.emit(value)
+
+    # --- Sobre ---------------------------------------------------------------
+
+    @Property(str, constant=True)
+    def appVersion(self) -> str:
+        return __version__
+
+    @Property(QUrl, constant=True)
+    def licensesFolderUrl(self) -> QUrl:
+        """Pasta com LICENSE, NOTICE, THIRD_PARTY_NOTICES.md e LICENSES/."""
+        return QUrl.fromLocalFile(str(LICENSES_DIR))
 
     @Property(str, notify=themeModeChanged)
     def themeMode(self) -> str:

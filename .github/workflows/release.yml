@@ -80,6 +80,11 @@ jobs:
           echo "exe: $EXE | adb: $ADB_DIR"
           uv run python packaging/smoke_test.py "$EXE" "$ADB_DIR"
 
+      # Licenças também na raiz do pacote (além de dentro do app), fáceis de achar
+      - name: Licenças na raiz do pacote
+        if: matrix.platform != 'macos'
+        run: cp -R LICENSE NOTICE THIRD_PARTY_NOTICES.md LICENSES dist/scrcpy-ui/
+
       - name: Empacotar (Windows)
         if: matrix.platform == 'windows'
         shell: pwsh
@@ -90,6 +95,7 @@ jobs:
         run: |
           mkdir -p dmg
           cp -R "dist/SCRCPY UI.app" dmg/
+          cp -R LICENSE NOTICE THIRD_PARTY_NOTICES.md LICENSES dmg/
           ln -s /Applications dmg/Applications
           hdiutil create -volname "SCRCPY UI" -srcfolder dmg -ov -format UDZO "$PACKAGE"
 

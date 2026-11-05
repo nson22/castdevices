@@ -8,6 +8,7 @@ Sem argumento, usa o sistema atual. Extrai só o necessário para
 resources/platform-tools/ (fora do git; ver .gitignore):
 - Windows: adb.exe, AdbWinApi.dll, AdbWinUsbApi.dll
 - macOS/Linux: adb
+- sempre: NOTICE.txt (licenças do platform-tools, redistribuído junto)
 """
 
 from __future__ import annotations
@@ -78,6 +79,12 @@ def main() -> None:
                 if name == "adb":
                     target.chmod(target.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
                 print(f"  {target.relative_to(DEST.parents[1])}")
+
+        # Licenças do platform-tools: vão junto do adb no pacote
+        with zipfile.ZipFile(archive) as zf:
+            with zf.open("platform-tools/NOTICE.txt") as src, (DEST / "NOTICE.txt").open("wb") as dst:
+                shutil.copyfileobj(src, dst)
+        print(f"  {(DEST / 'NOTICE.txt').relative_to(DEST.parents[1])}")
 
     (DEST / "VERSION").write_text(f"platform-tools {VERSION} ({platform})\n", encoding="utf-8")
     print(f"adb {VERSION} pronto em {DEST}")
