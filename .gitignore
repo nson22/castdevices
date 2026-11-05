@@ -7,3 +7,4 @@ dist/
 
 # adb embutido no pacote (baixado por packaging/fetch_adb.py)
 resources/platform-tools/
+smoke-test.log

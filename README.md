@@ -1,4 +1,13 @@
-# scrcpy-ui
+<p align="center">
+  <img src="resources/icons/scrcpy-ui.png" width="128" alt="Ícone do SCRCPY UI">
+</p>
+
+<h1 align="center">SCRCPY UI</h1>
+
+<p align="center">
+  Espelhe e controle devices Android pelo computador — Windows, macOS e Linux.<br>
+  <a href="https://github.com/nson22/scrcpy_ui/releases/latest"><b>Baixar a última versão</b></a>
+</p>
 
 Cliente desktop multiplataforma (Python + [PySide6](https://pypi.org/project/PySide6/)/QML) que
 reimplementa, de forma independente, as funcionalidades do
@@ -80,25 +89,42 @@ Segue o padrão **MVVM**:
   do scrcpy, decode/encode de mídia, persistência)
 - `qml/` — as Views (QML puro, só faz bind nos ViewModels)
 
-## Requisitos
+## Download
+
+Na [página de releases](https://github.com/nson22/scrcpy_ui/releases/latest). Não precisa instalar
+Python nem o Android platform-tools: o **adb oficial já vem junto**, na mesma versão usada pelo
+scrcpy (platform-tools 37.0.0). O device precisa estar com a **depuração USB** ativada.
+
+| Sistema | Arquivo | Como usar |
+|---|---|---|
+| Windows | `scrcpy-ui-<versão>-win64.zip` | Extraia e abra `scrcpy-ui.exe` |
+| macOS (Apple Silicon) | `scrcpy-ui-<versão>-macos-arm64.dmg` | Abra o `.dmg` e arraste o **SCRCPY UI** para Aplicativos |
+| Linux (x86_64) | `scrcpy-ui-<versão>-linux-x86_64.tar.gz` | Extraia e rode `./scrcpy-ui`, ou `./install.sh` para criar o atalho no menu |
+
+**macOS:** o app ainda não é assinado pela Apple. Na primeira vez, o macOS bloqueia a abertura.
+Clique com o botão direito no app → **Abrir**, ou rode
+`xattr -dr com.apple.quarantine "/Applications/SCRCPY UI.app"` no Terminal.
+
+**Linux:** precisa de uma distro com glibc 2.35 ou mais nova (Ubuntu 22.04+, Debian 12+,
+Fedora 36+). Para acessar o device via USB sem root, pode ser preciso configurar as regras
+`udev` do Android (pacote `android-sdk-platform-tools-common` no Debian/Ubuntu).
+
+## Requisitos (para rodar o código)
 
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/) para gerenciar o projeto e as dependências
-- Um device Android com depuração USB habilitada (não precisa instalar o Android platform-tools
-  separadamente — o [adbutils](https://pypi.org/project/adbutils/) já lida com o protocolo adb)
-- Windows (ambiente testado até agora; Linux/macOS ainda não validados)
-
-## Download (Windows)
-
-Baixe o `.zip` da [página de releases](https://github.com/nson22/scrcpy_ui/releases), extraia
-e abra `scrcpy-ui.exe`. Não precisa instalar Python nem o Android platform-tools.
+- Um device Android com depuração USB habilitada
 
 ## Rodando a partir do código
 
 ```sh
 uv sync
+uv run python packaging/fetch_adb.py   # adb oficial fixado (uma vez; opcional no dev)
 uv run python -m scrcpy_ui
 ```
+
+Sem o `fetch_adb.py`, o app usa o `adb` que o [adbutils](https://pypi.org/project/adbutils/) traz
+(Windows) ou o `adb` do PATH (macOS/Linux).
 
 ### Modo desenvolvimento (hot reload)
 
@@ -115,17 +141,40 @@ uv run scrcpy-ui-dev
 
 ## Gerando o executável
 
+Sempre no próprio sistema (o PyInstaller não faz build cruzado):
+
 ```sh
+uv run python packaging/fetch_adb.py      # adb oficial (versão fixada + SHA-256)
 uv run pyinstaller scrcpy-ui.spec --noconfirm
 ```
 
-A saída fica em `dist/scrcpy-ui/` (o `scrcpy-ui.exe` precisa das DLLs da mesma pasta).
+A saída fica em `dist/scrcpy-ui/` no Windows/Linux e em `dist/SCRCPY UI.app` no macOS.
+
+O ícone vem de `resources/icons/scrcpy-ui.svg`; depois de editar o SVG, gere os PNG/ICO/ICNS com
+`uv run python packaging/make_icons.py`.
+
+## Release
+
+Os releases são gerados pelo GitHub Actions ([`release.yml`](.github/workflows/release.yml)) a partir
+da `main`:
+
+1. Atualize a versão no `pyproject.toml` (e opcionalmente escreva as notas em
+   `packaging/release-notes/<tag>.md`).
+2. Crie e envie a tag: `git tag -a v0.0.4-alpha -m v0.0.4-alpha && git push origin v0.0.4-alpha`.
+3. O workflow builda Windows, macOS e Linux, roda um smoke test em cada pacote e publica tudo no
+   release da tag.
+
+Rodar o workflow manualmente (Actions → Release → Run workflow) sem tag só builda e testa — os
+pacotes ficam como artifacts da execução.
 
 ## Estrutura do projeto
 
 ```
+.github/workflows/  # release multiplataforma (GitHub Actions)
+packaging/          # entry do PyInstaller, fetch do adb, ícones, smoke test, extras do Linux
 resources/
   fonts/            # Roboto + Material Symbols (ícones por nome, via ligadura)
+  icons/            # ícone do app (SVG fonte + PNG/ICO/ICNS gerados)
   scrcpy-server/    # scrcpy-server.jar oficial (lado Android)
 src/scrcpy_ui/
   adb/              # push do server, listagem de devices, instalação de APK, apps instalados
@@ -143,4 +192,5 @@ src/scrcpy_ui/
 
 Em desenvolvimento ativo (alpha). O protocolo e os formatos de mídia foram validados contra um
 device real; recursos como OTG, gamepad, câmera, virtual display, gerenciamento de janela e
-instalador ainda não foram implementados. Linux/macOS ainda não foram testados.
+instalador ainda não foram implementados. O uso com device real foi validado no Windows; os pacotes
+de macOS e Linux passam por um smoke test automático no CI a cada release.

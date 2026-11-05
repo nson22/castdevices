@@ -32,7 +32,7 @@ jobs:
             os: windows-latest
             suffix: win64.zip
           - platform: macos
-            os: macos-14  # Apple Silicon (arm64)
+            os: macos-latest  # Apple Silicon (arm64)
             suffix: macos-arm64.dmg
           - platform: linux
             os: ubuntu-22.04  # glibc mais antiga = roda em mais distros
