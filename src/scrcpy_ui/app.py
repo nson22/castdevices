@@ -4,20 +4,17 @@ from __future__ import annotations
 
 import os
 import sys
-from pathlib import Path
 
 from PySide6.QtGui import QFont, QFontDatabase, QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
 
+from scrcpy_ui.paths import FONTS_DIR, QML_DIR
 from scrcpy_ui.storage.settings_store import SettingsStore
 from scrcpy_ui.viewmodels.device_list_view_model import DeviceListViewModel
 from scrcpy_ui.viewmodels.device_preview_provider import DevicePreviewProvider
 from scrcpy_ui.viewmodels.mirror_view_model import MirrorViewModel
 from scrcpy_ui.viewmodels.settings_view_model import SettingsViewModel
-
-QML_DIR = Path(__file__).resolve().parent / "qml"
-FONTS_DIR = Path(__file__).resolve().parents[2] / "resources" / "fonts"
 
 
 def _load_fonts(app: QGuiApplication) -> None:

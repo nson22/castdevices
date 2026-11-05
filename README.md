@@ -44,12 +44,25 @@ Segue o padrão **MVVM**:
   separadamente — o [adbutils](https://pypi.org/project/adbutils/) já lida com o protocolo adb)
 - Windows (ambiente testado até agora; Linux/macOS ainda não validados)
 
-## Rodando
+## Download (Windows)
+
+Baixe o `.zip` da [página de releases](https://github.com/nson22/scrcpy_ui/releases), extraia
+e abra `scrcpy-ui.exe`. Não precisa instalar Python nem o Android platform-tools.
+
+## Rodando a partir do código
 
 ```sh
 uv sync
 uv run python -m scrcpy_ui
 ```
+
+## Gerando o executável
+
+```sh
+uv run pyinstaller scrcpy-ui.spec --noconfirm
+```
+
+A saída fica em `dist/scrcpy-ui/` (o `scrcpy-ui.exe` precisa das DLLs da mesma pasta).
 
 ## Estrutura do projeto
 

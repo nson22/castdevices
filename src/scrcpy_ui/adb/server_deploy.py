@@ -7,12 +7,11 @@ antes de cada sessão, não só na primeira vez.
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import adbutils
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-SERVER_JAR_LOCAL = PROJECT_ROOT / "resources" / "scrcpy-server" / "scrcpy-server-v4.0.jar"
+from scrcpy_ui.paths import SERVER_DIR
+
+SERVER_JAR_LOCAL = SERVER_DIR / "scrcpy-server-v4.0.jar"
 SERVER_JAR_REMOTE = "/data/local/tmp/scrcpy-server.jar"
 SERVER_VERSION = "4.0"
 
