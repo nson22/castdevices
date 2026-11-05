@@ -5,12 +5,12 @@ from __future__ import annotations
 import os
 import sys
 
-from PySide6.QtGui import QFont, QFontDatabase, QGuiApplication
+from PySide6.QtGui import QFont, QFontDatabase, QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
 
 from scrcpy_ui.hot_reload import QmlHotReloader
-from scrcpy_ui.paths import FONTS_DIR, QML_DIR
+from scrcpy_ui.paths import FONTS_DIR, ICONS_DIR, QML_DIR, use_bundled_adb
 from scrcpy_ui.storage.settings_store import SettingsStore
 from scrcpy_ui.viewmodels.device_list_view_model import DeviceListViewModel
 from scrcpy_ui.viewmodels.device_preview_provider import DevicePreviewProvider, PreviewImageStore
@@ -39,10 +39,14 @@ def configure_style() -> None:
 
 
 def run(dev_mode: bool = False) -> int:
+    use_bundled_adb()
     configure_style()
     app = QGuiApplication(sys.argv)
+    # Nome interno (define a pasta das configurações -- não mudar) e nome exibido
     app.setOrganizationName("scrcpy-ui")
     app.setApplicationName("scrcpy-ui")
+    app.setApplicationDisplayName("SCRCPY UI")
+    app.setWindowIcon(QIcon(str(ICONS_DIR / "scrcpy-ui.png")))
     _load_fonts(app)
 
     preview_store = PreviewImageStore()

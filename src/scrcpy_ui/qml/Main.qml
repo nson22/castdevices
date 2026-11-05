@@ -9,7 +9,8 @@ ApplicationWindow {
     minimumWidth: 460
     minimumHeight: 480
     visible: true
-    title: "scrcpy-ui"
+    // O Qt acrescenta " - SCRCPY UI" (applicationDisplayName); vazio = só o nome do app
+    title: ""
     color: Theme.background
 
     // Controles nativos (Switch, ComboBox, Menu, Dialog...) herdam os tokens
@@ -50,11 +51,11 @@ ApplicationWindow {
     Connections {
         target: mirrorViewModel
         function onConnected(name, w, h) {
-            window.title = "scrcpy-ui — " + name
+            window.title = name
             stackView.push(mirrorComponent)
         }
         function onDisconnected() {
-            window.title = "scrcpy-ui"
+            window.title = ""
             stackView.pop(stackView.get(0))
         }
         function onErrorOccurred(message) {

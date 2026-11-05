@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- SCRCPY UI: celular espelhado (ondas de "transmissão") sobre fundo azul -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#1e3a8a"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f1b3d"/>
+      <stop offset="1" stop-color="#172554"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fundo (squircle) -->
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="url(#bg)"/>
+
+  <!-- Celular -->
+  <rect x="222" y="196" width="360" height="632" rx="64" fill="#ffffff"/>
+  <rect x="254" y="262" width="296" height="500" rx="22" fill="url(#screen)"/>
+  <rect x="352" y="222" width="100" height="16" rx="8" fill="#c7d2fe"/>
+
+  <!-- Play na tela -->
+  <path d="M362 432 L362 592 L494 512 Z" fill="#60a5fa" stroke="#60a5fa" stroke-width="28" stroke-linejoin="round"/>
+
+  <!-- Ondas de espelhamento -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-width="52">
+    <path d="M650 404 A140 140 0 0 1 650 620"/>
+    <path d="M730 318 A250 250 0 0 1 730 706" opacity="0.75"/>
+  </g>
+</svg>

@@ -1,7 +1,22 @@
 # -*- mode: python ; coding: utf-8 -*-
-# Build: uv run pyinstaller scrcpy-ui.spec --noconfirm
-# Saída: dist/scrcpy-ui/scrcpy-ui.exe (+ DLLs/recursos na mesma pasta)
-from PyInstaller.utils.hooks import collect_data_files
+# Build (Windows, macOS ou Linux, sempre no próprio sistema):
+#   uv run python packaging/fetch_adb.py      # adb oficial fixado (uma vez)
+#   uv run pyinstaller scrcpy-ui.spec --noconfirm
+# Saída:
+#   Windows/Linux: dist/scrcpy-ui/  (executável scrcpy-ui[.exe] + _internal/)
+#   macOS:         dist/SCRCPY UI.app
+import sys
+from pathlib import Path
+
+APP_NAME = "SCRCPY UI"
+ICONS = Path("resources/icons")
+ADB_DIR = Path("resources/platform-tools")
+
+if not (ADB_DIR / "VERSION").is_file():
+    raise SystemExit(
+        "adb não encontrado em resources/platform-tools/. "
+        "Rode antes: uv run python packaging/fetch_adb.py"
+    )
 
 a = Analysis(
     ["packaging/entry.py"],
@@ -9,9 +24,10 @@ a = Analysis(
     datas=[
         ("src/scrcpy_ui/qml", "scrcpy_ui/qml"),
         ("resources/fonts", "resources/fonts"),
+        ("resources/icons", "resources/icons"),
         ("resources/scrcpy-server", "resources/scrcpy-server"),
-        # adb.exe + AdbWinApi.dll que o adbutils traz embutidos
-        *collect_data_files("adbutils"),
+        # adb oficial fixado (o mesmo do scrcpy) -- ver packaging/fetch_adb.py
+        (str(ADB_DIR), "resources/platform-tools"),
     ],
     hiddenimports=[
         "PySide6.QtQuickControls2",
@@ -41,6 +57,8 @@ _UNUSED = (
     "Nfc", "SerialPort", "Qt6Test", "QtTest", "Qt5Compat", "LabsStyleKit",
     "FluentWinUI3", "Imagine", "Universal", "Fusion",
     "Controls2Windows", "Controls/Windows", "/designer", "opengl32sw",
+    # adb que o adbutils traz (só Windows): o app usa o de resources/platform-tools
+    "adbutils/binaries",
 )
 
 
@@ -62,6 +80,7 @@ exe = EXE(
     name="scrcpy-ui",
     console=False,
     upx=False,
+    icon=str(ICONS / ("scrcpy-ui.ico" if sys.platform == "win32" else "scrcpy-ui.icns")),
 )
 
 coll = COLLECT(
@@ -71,3 +90,20 @@ coll = COLLECT(
     upx=False,
     name="scrcpy-ui",
 )
+
+if sys.platform == "darwin":
+    app = BUNDLE(
+        coll,
+        name=f"{APP_NAME}.app",
+        icon=str(ICONS / "scrcpy-ui.icns"),
+        bundle_identifier="io.github.nson22.scrcpyui",
+        info_plist={
+            "CFBundleName": APP_NAME,
+            "CFBundleDisplayName": APP_NAME,
+            "NSHighResolutionCapable": True,
+            # Seleção de pasta/arquivo (screenshots, gravações, APK)
+            "NSDesktopFolderUsageDescription": "Salvar screenshots e gravações.",
+            "NSDocumentsFolderUsageDescription": "Salvar screenshots e gravações.",
+            "NSDownloadsFolderUsageDescription": "Escolher APKs para instalar.",
+        },
+    )

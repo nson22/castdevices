@@ -4,3 +4,6 @@ __pycache__/
 *.sqlite3
 build/
 dist/
+
+# adb embutido no pacote (baixado por packaging/fetch_adb.py)
+resources/platform-tools/

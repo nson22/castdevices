@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SCRCPY UI
+Comment=Espelhe e controle devices Android
+Exec=scrcpy-ui
+Icon=scrcpy-ui
+Terminal=false
+Categories=Utility;Development;

@@ -1,7 +1,7 @@
 [project]
 name = "scrcpy-ui"
 version = "0.0.3a0"
-description = "Cliente desktop (PySide6/QML) para espelhar e controlar devices Android, compatível com o scrcpy-server"
+description = "SCRCPY UI: app desktop (PySide6/QML) para espelhar e controlar devices Android, compatível com o scrcpy-server"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
