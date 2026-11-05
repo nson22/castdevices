@@ -45,8 +45,7 @@ Rectangle {
             IconButton {
                 objectName: "inspectorRefresh"
                 iconName: "refresh"
-                busy: inspectorViewModel.busy
-                tip: busy ? "Capturando…" : "Capturar de novo (atualiza sozinho quando a tela muda)"
+                tip: "Recarregar (também atualiza sozinho quando a tela muda)"
                 onClicked: inspectorViewModel.refresh()
             }
         }
@@ -144,10 +143,18 @@ Rectangle {
                 }
             }
 
+            // Carregando: esqueleto da árvore na primeira captura; nas recapturas
+            // a árvore atual continua visível com o brilho passando por cima
+            ShimmerSkeleton {
+                anchors.fill: parent
+                visible: inspectorViewModel.busy
+                skeleton: tree.rows === 0
+            }
+
             Label {
                 anchors.centerIn: parent
-                visible: tree.rows === 0 && inspectorViewModel.errorMessage.length === 0
-                text: inspectorViewModel.busy ? "Capturando hierarquia…" : "Nada capturado ainda"
+                visible: tree.rows === 0 && !inspectorViewModel.busy && inspectorViewModel.errorMessage.length === 0
+                text: "Nada capturado ainda"
                 color: Theme.textSecondary
                 font.pixelSize: Theme.fontBody
             }
