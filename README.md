@@ -70,6 +70,12 @@ decoder AV1 funcional — pode não decodificar dependendo do ambiente.
 
 Essa tabela também está em **Configurações → Comandos do mouse**.
 
+### Tela cheia
+
+**F11** (ou o botão de tela cheia na barra) coloca o espelhamento em tela cheia: a barra de ações
+some e o vídeo ocupa a tela toda. Leve o mouse até a **borda de cima** da tela para a barra descer;
+ela sobe de novo quando o mouse sai dela. **Esc** ou **F11** voltam à janela.
+
 ### Instalar APK
 
 - **Em vários devices**: na grade, clique no ícone de APK na barra superior, escolha o arquivo e

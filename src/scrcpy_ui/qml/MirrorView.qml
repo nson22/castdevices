@@ -12,12 +12,104 @@ Item {
         SettingsView {}
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        spacing: 0
+    // --- Tela cheia ----------------------------------------------------------
+    // A barra superior some e o vídeo ocupa a tela toda. Levar o mouse à borda
+    // de cima faz a barra descer por cima do vídeo; ela sobe de novo pouco
+    // depois que o mouse sai dela.
+    readonly property bool fullScreen: Window.window !== null && Window.window.visibility === Window.FullScreen
+    property bool barRevealed: false
+    readonly property bool barShown: !fullScreen || barRevealed || barHover.hovered
+    // Estado da janela pra voltar ao sair da tela cheia (normal ou maximizada)
+    property int restoreVisibility: Window.Windowed
 
-        AppBar {
-            Layout.fillWidth: true
+    function setFullScreen(on) {
+        const win = root.Window.window
+        if (!win) {
+            return
+        }
+        if (on && win.visibility !== Window.FullScreen) {
+            root.restoreVisibility = win.visibility === Window.Maximized ? Window.Maximized : Window.Windowed
+            win.visibility = Window.FullScreen
+            // Mostra a barra um instante pra indicar que ela continua acessível
+            root.barRevealed = true
+            hideBarTimer.interval = 2000
+            hideBarTimer.restart()
+        } else if (!on && win.visibility === Window.FullScreen) {
+            win.visibility = root.restoreVisibility
+        }
+    }
+
+    function revealBar() {
+        root.barRevealed = true
+        hideBarTimer.interval = 700
+        hideBarTimer.restart()
+    }
+
+    Timer {
+        id: hideBarTimer
+        interval: 700
+        // Só esconde se o mouse não estiver na barra nem na borda de cima
+        onTriggered: if (!barHover.hovered && !topEdgeHover.hovered) root.barRevealed = false
+    }
+
+    Shortcut {
+        sequence: "F11"
+        onActivated: root.setFullScreen(!root.fullScreen)
+    }
+    Shortcut {
+        sequence: "Esc"
+        enabled: root.fullScreen
+        onActivated: root.setFullScreen(false)
+    }
+
+    Item {
+        anchors.fill: parent
+
+        // Contêiner da barra: posição (some/desce em tela cheia), hover e sombra.
+        // Ficam aqui e não dentro do AppBar porque os filhos do AppBar viram
+        // botões da fileira da direita (propriedade padrão dele).
+        Item {
+            id: topBar
+            objectName: "topBar"
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: appBar.implicitHeight
+            y: root.barShown ? 0 : -height
+            z: 20
+
+            Behavior on y {
+                enabled: root.fullScreen
+                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+            }
+
+            HoverHandler {
+                id: barHover
+                onHoveredChanged: {
+                    if (hovered) {
+                        hideBarTimer.stop()
+                    } else if (root.fullScreen) {
+                        hideBarTimer.interval = 700
+                        hideBarTimer.restart()
+                    }
+                }
+            }
+
+            // Sombra embaixo da barra quando ela flutua sobre o vídeo
+            Rectangle {
+                visible: root.fullScreen
+                anchors.top: parent.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 10
+                gradient: Gradient {
+                    GradientStop { position: 0; color: Qt.rgba(0, 0, 0, 0.35) }
+                    GradientStop { position: 1; color: "transparent" }
+                }
+            }
+
+            AppBar {
+            id: appBar
+            anchors.fill: parent
 
             // Ações no device
             IconButton {
@@ -100,6 +192,12 @@ Item {
                 onToggled: root.setInspectorOpen(checked)
             }
             IconButton {
+                objectName: "fullScreenButton"
+                iconName: root.fullScreen ? "fullscreen_exit" : "fullscreen"
+                tip: root.fullScreen ? "Sair da tela cheia (F11 ou Esc)" : "Tela cheia (F11)"
+                onClicked: root.setFullScreen(!root.fullScreen)
+            }
+            IconButton {
                 iconName: "settings"
                 tip: "Configurações"
                 onClicked: root.StackView.view.push(settingsComponent)
@@ -109,12 +207,16 @@ Item {
                 tip: "Desconectar"
                 onClicked: mirrorViewModel.disconnectDevice()
             }
+            }
         }
 
         SplitView {
             id: split
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            // Em tela cheia a barra flutua por cima: o vídeo ocupa a altura toda
+            anchors.top: root.fullScreen ? parent.top : topBar.bottom
             orientation: Qt.Horizontal
 
             handle: Rectangle {
@@ -294,6 +396,23 @@ Item {
                 SplitView.minimumWidth: 300
             }
         }
+
+        // Borda de cima (só em tela cheia): o mouse aqui faz a barra descer.
+        // HoverHandler é passivo: não rouba cliques/toques do vídeo embaixo.
+        Item {
+            objectName: "topEdge"
+            visible: root.fullScreen
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: 4
+            z: 21
+
+            HoverHandler {
+                id: topEdgeHover
+                onHoveredChanged: if (hovered) root.revealBar()
+            }
+        }
     }
 
     // Os dois painéis laterais (hierarquia e apps) ocupam o mesmo lugar: abrir
@@ -330,7 +449,10 @@ Item {
     // Saiu da pilha (desconectou): para a recaptura. Não usa onDestruction: no
     // hot reload a tela nova é criada antes da antiga ser destruída, e isso
     // desligaria o painel que a tela nova acabou de abrir.
-    StackView.onRemoved: inspectorViewModel.active = false
+    StackView.onRemoved: {
+        inspectorViewModel.active = false
+        root.setFullScreen(false)  // desconectou em tela cheia: volta à janela
+    }
 
     FileDialog {
         id: mirrorApkDialog

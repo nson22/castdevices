@@ -332,6 +332,12 @@ Item {
 
                             MouseChip { iconName: "swap_vert"; text: "Roda do mouse" }
                         }
+                        SettingRow {
+                            label: "Tela cheia"
+                            description: "O vídeo ocupa a tela toda. Leve o mouse até a borda de cima para mostrar a barra de ações; Esc ou F11 saem da tela cheia."
+
+                            MouseChip { iconName: "keyboard"; text: "F11" }
+                        }
                     }
                 }
             }
