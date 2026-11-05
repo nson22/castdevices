@@ -68,12 +68,22 @@ _UNUSED = (
     "Controls2Windows", "Controls/Windows", "/designer", "opengl32sw",
     # adb que o adbutils traz (só Windows): o app usa o de resources/platform-tools
     "adbutils/binaries",
+    # Módulos do Qt licenciados só sob GPL (ou comercial), sem opção LGPL: não
+    # podem ir num app Apache-2.0. O app não usa nenhum deles.
+    "QuickTimeline", "Quick/Timeline", "ShaderTools", "Lottie", "Quick3D",
+    "VirtualKeyboard", "Charts", "DataVisualization", "Graphs", "HttpServer",
+    "Protobuf", "Grpc", "Mqtt", "Coap", "OpcUa", "WaylandCompositor",
 )
 
 
+_UNUSED_LOWER = tuple(token.lower() for token in _UNUSED)
+
+
 def _keep(entry):
-    dest = entry[0].replace("\\", "/")
-    return not any(token in dest for token in _UNUSED)
+    # Sem diferenciar maiúsculas: plugins usam nomes minúsculos
+    # (ex.: qtvirtualkeyboardplugin, qmldbg_quick3dprofiler)
+    dest = entry[0].replace("\\", "/").lower()
+    return not any(token in dest for token in _UNUSED_LOWER)
 
 
 a.binaries = [e for e in a.binaries if _keep(e)]
